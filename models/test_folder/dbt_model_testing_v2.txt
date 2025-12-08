@@ -1,0 +1,37 @@
+{{
+    config(
+        materialized="incremental",
+        incremental_strategy="merge",
+        unique_key="PAP_CODE",
+    )
+}}
+{% set last_updated_date = '1900-01-01 00:00:00' %}
+with
+    source_data as (
+        select
+            {{ string_transform('AGENCY_DOMESTIC') }} as AGENCY_DOMESTIC,
+            {{ string_transform('BEST_FARE_ELIGIBLE') }} as BEST_FARE_ELIGIBLE,
+            {{ string_transform('COMMENTS') }} as COMMENTS,
+            {{ string_transform('COUPON_CLASS') }} as COUPON_CLASS,
+            {{ string_transform('EXTERNAL_RULES') }} as EXTERNAL_RULES,
+            {{ string_transform('IS_ACTIVE') }} as IS_ACTIVE,
+            {{ string_transform('IS_PRICE_PROGRAM') }} as IS_PRICE_PROGRAM,
+            {{ string_transform('MANUAL_INPUT_VALUE_TYPE') }} as MANUAL_INPUT_VALUE_TYPE,
+            {{ string_transform('PAP_CODE') }} as PAP_CODE,
+            {{ numeric_transform('PAP_ID') }} as PAP_ID,
+            {{ string_transform('PAP_NAME') }} as PAP_NAME,
+            {{ string_transform('PAP_TYPE') }} as PAP_TYPE,
+            {{ string_transform('PRINT_CRUISE_FARE_AMOUNT') }} as PRINT_CRUISE_FARE_AMOUNT,
+            {{ numeric_transform('PRIORITY') }} as PRIORITY,
+            {{ string_transform('PROGRAM_CURRENCY') }} as PROGRAM_CURRENCY,
+            {{ string_transform('PROMO_GROUP') }} as PROMO_GROUP,
+            {{ string_transform('_FIVETRAN_DELETED') }} as _FIVETRAN_DELETED,
+            {{ string_transform('_FIVETRAN_ID') }} as _FIVETRAN_ID,
+            {{ string_transform('_FIVETRAN_SYNCED') }} as _FIVETRAN_SYNCED
+        from {{ source('db_source','pap_master')}}
+        {% if is_incremental() %}
+        where _FIVETRAN_SYNCED > '{{ last_updated_date }}'
+        {% endif %}
+    )
+select *
+from source_data
