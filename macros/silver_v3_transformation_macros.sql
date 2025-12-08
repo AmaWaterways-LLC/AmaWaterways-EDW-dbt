@@ -7,7 +7,7 @@
      --2 = string_trim_with_na_fallback
    ============================================================ #}
 
-{% macro transform_string1(column_name) %}
+{% macro transform_string(column_name) %}
     {#% if selector == 1 %#}
         TRIM({{ column_name }})
 
@@ -26,7 +26,7 @@
      1 = numeric_trim_digits
    ============================================================ #}
 
-{% macro transform_numeric1(column_name) %}
+{% macro transform_numeric(column_name) %}
     {#% if selector == 1 %#}
         CASE 
             WHEN {{ column_name }} IS NULL THEN NULL
@@ -47,7 +47,7 @@
      --2 = date_standardize_et
    ============================================================ #}
 
-{% macro transform_datetime1(column_name, is_join_key=false) %}
+{% macro transform_datetime(column_name, is_join_key=false) %}
     {#% if selector == 1 %#}
         CASE 
             WHEN {{ column_name }} IS NULL THEN 
