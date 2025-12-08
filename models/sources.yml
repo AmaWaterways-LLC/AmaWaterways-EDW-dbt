@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: SW1
+  - name: AMA_PROD_BRNZ_SW1
     database: AMA_PROD_BRNZ
     schema: SW1_SEAWARE
     description: "Source tables from the SW1 Seaware application"
@@ -191,7 +191,7 @@ sources:
       - name: VENDOR_PHONE
       - name: VENDOR_PKG_ASSIGNMENT
 
-  - name: SW2
+  - name: AMA_PROD_BRNZ_SW2
     database: AMA_PROD_BRNZ
     schema: SW2_SEAWARE
     description: "Source tables from the SW2 Seaware application"
