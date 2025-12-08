@@ -149,6 +149,24 @@
   {% endif %}
 {% endmacro %}
 
+{% macro compute_max_watermark_seaware(relation, watermark_column, data_source) %}
+  {% if watermark_column is none %}
+    {{ return(none) }}
+  {% endif %}
+  {% set sql %}
+    select max({{ watermark_column }}) as max_wm
+    from {{ relation }}
+    where 'data_source' = '{{data_source}}'
+  {% endset %}
+  {% set res = run_query(sql) %}
+  {% if execute and res and res.rows|length > 0 %}
+    {% set max_value = res.rows[0][0] %}
+    {{ return(max_value) }}
+  {% else %}
+    {{ return(none) }}
+  {% endif %}
+{% endmacro %}
+
 {# Helper: Get record count from a relation #}
 {% macro get_record_count(relation) %}
   {% set sql %}
