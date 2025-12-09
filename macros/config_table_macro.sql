@@ -30,7 +30,7 @@
 
 {# --- Helper: default watermark literal for coalesce operations --- #}
 {% macro wm_default_literal() -%}
-  '1900-01-01 00:00:00:000 +0000'::timestamp_tz
+  '1900-01-01 00:00:00.000 +0000'::timestamp_tz
 {%- endmacro %}
 
 {# --- Helper: format watermark value for SQL comparison --- #}
