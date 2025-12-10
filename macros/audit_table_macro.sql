@@ -245,3 +245,33 @@
     
     {% do log("=" * 80, info=true) %}
 {% endmacro %}
+
+{% macro audit_failure_handler(results) %}
+
+    {% for r in results %}
+        {% if r.node.resource_type != "model" %}
+            {% continue %}
+        {% endif %}
+
+        {% if r.status == "success" %}
+            {% continue %}
+        {% endif %}
+
+        {# Read batch_id from model meta #}
+        {% set batch_id = r.node.config.meta.get('batch_id') %}
+
+        {% if batch_id is none %}
+            {{ log("⚠ No batch_id available for failed model: " ~ r.node.name, info=true) }}
+            {% continue %}
+        {% endif %}
+
+        {{ log("⚠ Updating FAILED audit record for batch_id=" ~ batch_id, info=true) }}
+
+        {% do audit_end(
+            batch_id=batch_id,
+            status='FAILED',
+            error_message=r.message
+        ) %}
+    {% endfor %}
+
+{% endmacro %}

@@ -44,7 +44,6 @@ sources:
       - name: AGENT
       - name: RES_CHARGE_DETAIL
       - name: CABIN_INVENTORY
-      - name: RV_GROUP_INFO
       - name: RES_WTL_REQUEST
       - name: COND_STR_LIB
       - name: RES_HEADER_CounponIssued
@@ -234,7 +233,6 @@ sources:
       - name: AGENT
       - name: RES_CHARGE_DETAIL
       - name: CABIN_INVENTORY
-      - name: RV_GROUP_INFO
       - name: RES_WTL_REQUEST
       - name: COND_STR_LIB
       - name: RES_HEADER_CounponIssued
@@ -426,7 +424,6 @@ sources:
       - name: AGENT
       - name: RES_CHARGE_DETAIL
       - name: CABIN_INVENTORY
-      - name: RV_GROUP_INFO
       - name: RES_WTL_REQUEST
       - name: COND_STR_LIB
       - name: RES_HEADER_CounponIssued
@@ -616,7 +613,6 @@ sources:
       - name: AGENT
       - name: RES_CHARGE_DETAIL
       - name: CABIN_INVENTORY
-      - name: RV_GROUP_INFO
       - name: RES_WTL_REQUEST
       - name: COND_STR_LIB
       - name: RES_HEADER_CounponIssued
@@ -762,4 +758,12 @@ sources:
       - name: VENDOR
       - name: VENDOR_PHONE
       - name: VENDOR_PKG_ASSIGNMENT
+
+  - name: AMA_TEST_SW1
+    database: AMA_RAW
+    schema: SW1_KEY_TEST
+    tables:
+      - name: AIR_REQ_ITIN
+
+
 
