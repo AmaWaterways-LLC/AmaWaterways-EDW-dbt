@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['TRANS_ID', '_FIVETRAN_ID'],
+        unique_key=['TRANS_ID'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
