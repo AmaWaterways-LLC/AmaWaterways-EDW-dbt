@@ -8,6 +8,7 @@ config-version: 2
 
 on-run-end:
   - "{{ audit_failure_handler(results) }}"
+  - "{{ dbt_logging(results) }}"
 
 # This setting configures which "profile" dbt uses for this project.
 profile: 'default'

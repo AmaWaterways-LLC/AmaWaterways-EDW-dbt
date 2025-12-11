@@ -1,0 +1,94 @@
+{% macro dbt_logging(results) -%}
+
+{% set audit_log_schema = "dbt_mkompelli" %}
+{% set audit_log_table = "dbt_audit_log" %}
+
+{% for result in results if result.node.resource_type in ['model'] %}
+
+        {% set model_name = result.node.name %}
+        {% set status = result.status | upper %}
+
+        {# DETECT MODEL LAYER BASED ON DIRECTORY #}
+        {% if 'silver' in result.node.path %}
+            {% set layer = 'SILVER' %}
+        {% elif 'gold' in result.node.path %}
+            {% set layer = 'GOLD' %}
+        {% elif 'model' in result.node.path %}
+            {% set layer = 'MODEL' %}
+        {% else %}
+            {% set layer = 'UNKNOWN' %}
+        {% endif %}
+
+        {% set upstream_sources = result.node.depends_on.sources %}
+        {#% do log("Results object: " ~ results | tojson, info=True) %#}
+
+        {% if upstream_sources | length > 0 %}
+            {% if layer == 'SILVER' %}
+                {% set first_source = upstream_sources[0] %}
+                {% set parts = first_source.split('.') %}
+                {% set source_system = parts[1] | upper %}
+                {% set source_system = first_source.split('.')[1] | upper %}
+            {% else %}
+                {% set source_system = 'UNKNOWN' %}
+            {% endif %}
+        {% else %}
+            {% set source_system = 'UNKNOWN' %}
+        {% endif %}
+         
+
+        {# SAFE timing extraction #}
+        {% set start_time = result.timing[0].started_at if result.timing | length > 0 else none %}
+        {% set end_time = result.timing[1].completed_at if result.timing | length > 1 else none %}
+        {% set duration = result.execution_time if result.execution_time is not none else 0 %}
+
+        {% set rows_affected = result.adapter_response.get("rows_affected", 0) %}
+
+        {# SAFE error escaping #}
+        {% set error_message %}
+            {% if status == 'SUCCESS' %}
+                NULL
+            {% else %}
+                {{ ("'" ~ (result.message | replace("'", "''")) ~ "'") }}
+            {% endif %}
+        {% endset %}
+
+        {# INSERT LOG #}
+        {% set insert_sql %}
+            INSERT INTO {{ target.database }}.{{ audit_log_schema }}.{{ audit_log_table }} (
+                run_id,
+                run_time,
+                model_name,
+                model_layer,
+                run_status,
+                start_time,
+                end_time,
+                duration_seconds,
+                rows_affected,
+                error_message,
+                active_flag,
+                last_modified_date,
+                source_layer
+            )
+            VALUES (
+                '{{ invocation_id }}',
+                '{{ run_started_at }}',
+                '{{ model_name }}',
+                '{{ layer }}',
+                '{{ status }}',
+                {% if start_time %}'{{ start_time }}'{% else %} NULL {% endif %},
+                {% if end_time %}'{{ end_time }}'{% else %} NULL {% endif %},
+                {{ duration }},
+                {{ rows_affected }},
+                {{ error_message }},
+                1,
+                current_timestamp(),
+                '{{ source_system }}'
+            )
+        {% endset %}
+
+        {% do run_query(insert_sql) %}
+
+    {% endfor %}
+
+{%- endmacro %}
+
