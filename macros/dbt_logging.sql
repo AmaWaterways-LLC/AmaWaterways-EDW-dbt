@@ -3,6 +3,12 @@
 {% set audit_log_schema = "dbt_mkompelli" %}
 {% set audit_log_table = "dbt_audit_log" %}
 
+{# Reset previous active flags #}
+{% do run_query(
+    "UPDATE " ~ target.database ~ "." ~ audit_log_schema ~ "." ~ audit_log_table ~
+    " SET active_flag = 0 WHERE active_flag = 1"
+) %}
+
 {% for result in results if result.node.resource_type in ['model'] %}
 
         {% set model_name = result.node.name %}
@@ -20,7 +26,9 @@
         {% endif %}
 
         {% set upstream_sources = result.node.depends_on.sources %}
-        {#% do log("Results object: " ~ results | tojson, info=True) %#}
+        {#% do log(result.node | list, info=True) %}
+        {% do log(result.node | list, info=True) %#}
+        {% do log('results' ~ result['node']['depends_on']['sources'], info=True) %}
 
         {% if upstream_sources | length > 0 %}
             {% if layer == 'SILVER' %}
