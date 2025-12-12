@@ -3,8 +3,7 @@
    ================================================================ #}
 
 {{ config(
-    materialized = 'table',   -- always full refresh
-    full_refresh = true       -- ensures table is rebuilt completely
+    materialized = 'table'
 ) }}
 
 {# ================================================================
