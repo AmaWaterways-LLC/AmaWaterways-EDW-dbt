@@ -10,27 +10,27 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['DUE_TYPE', 'RES_ID', 'DATA_SOURCE'],
+        unique_key=['RECORD_ID', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
              {% if table_exists %}
-                 {% set cfg = get_config_row('SW1', target.database, target.schema, 'RES_PMNT_SCH_REQ') %}
+                 {% set cfg = get_config_row('SW1', target.database, target.schema, 'GTB_DOC_HISTORY') %}
                  {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}            
              {% endif %}"
         ],
         post_hook=[
             "{% if execute %}
-                 {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'RES_PMNT_SCH_REQ') %}
+                 {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'GTB_DOC_HISTORY') %}
                  {% set max_wm_sw1 = compute_max_watermark_seaware(this, wm_col_sw1, 'SW1') %}
                  {% if max_wm_sw1 is not none %}
-                     {% do update_config_watermark('SW1', target.database, target.schema, 'RES_PMNT_SCH_REQ', max_wm_sw1) %}
+                     {% do update_config_watermark('SW1', target.database, target.schema, 'GTB_DOC_HISTORY', max_wm_sw1) %}
                  {% endif %}
 
-                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'RES_PMNT_SCH_REQ') %}
+                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'GTB_DOC_HISTORY') %}
                  {% set max_wm_sw2 = compute_max_watermark_seaware(this, wm_col_sw2, 'SW2') %}
                  {% if max_wm_sw2 is not none %}
-                     {% do update_config_watermark('SW2', target.database, target.schema, 'RES_PMNT_SCH_REQ', max_wm_sw2) %}
+                     {% do update_config_watermark('SW2', target.database, target.schema, 'GTB_DOC_HISTORY', max_wm_sw2) %}
                 {% endif %}
              {% endif %}"
         ]
@@ -43,11 +43,11 @@
    ================================================================ #}
 
 {% if execute %}
-    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'RES_PMNT_SCH_REQ') %}
+    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'GTB_DOC_HISTORY') %}
     {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
     {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw1 = (last_wm_sw1 is none) %}
-    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'RES_PMNT_SCH_REQ') %}
+    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'GTB_DOC_HISTORY') %}
     {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
     {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw2 = (last_wm_sw2 is none) %}
@@ -64,51 +64,26 @@
    SOURCE CTE
    ================================================================ #}
 
-WITH sw1_src AS (
+WITH src AS (
     SELECT
             'SW1' AS DATA_SOURCE,
             {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-            {{ transform_numeric('RES_ID') }} AS RES_ID,
-            {{ transform_string('DUE_TYPE') }} AS DUE_TYPE,
-            {{ transform_numeric('AMOUNT') }} AS AMOUNT,
-            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
+            {{ transform_numeric('DOC_QUEUE_ID') }} AS DOC_QUEUE_ID,
+            {{ transform_datetime('TIME_STAMP') }} AS TIME_STAMP,
+            {{ transform_string('USER_ID') }} AS USER_ID,
+            {{ transform_string('NEW_STATUS') }} AS NEW_STATUS,
+            {{ transform_string('OLD_STATUS') }} AS OLD_STATUS,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
-            {{ transform_datetime('DUE_DATE') }} AS DUE_DATE,
-            {{ transform_datetime('EXPIRATION_DATE') }} AS EXPIRATION_DATE
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'RES_PMNT_SCH_REQ') }}
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
+    FROM {{ source('AMA_PROD_BRNZ_SW1', 'GTB_DOC_HISTORY') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
-    WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
-    {% endif %}
-),
-
-sw2_src AS (
-    SELECT
-            'SW2' AS DATA_SOURCE,
-            {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-            {{ transform_numeric('RES_ID') }} AS RES_ID,
-            {{ transform_string('DUE_TYPE') }} AS DUE_TYPE,
-            {{ transform_numeric('AMOUNT') }} AS AMOUNT,
-            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
-            _FIVETRAN_DELETED AS SOURCE_DELETED,
-            {{ transform_datetime('DUE_DATE') }} AS DUE_DATE,
-            {{ transform_datetime('EXPIRATION_DATE') }} AS EXPIRATION_DATE
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'RES_PMNT_SCH_REQ') }}
-    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
-    {% if is_incremental() and not is_full %}
-    WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
+    WHERE COALESCE({{ wm_col }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm) }}
     {% endif %}
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
-
-UNION ALL
-
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS GTB_DOC_HISTORY_SURROGATE_KEY,
+    src.*
+FROM src
 

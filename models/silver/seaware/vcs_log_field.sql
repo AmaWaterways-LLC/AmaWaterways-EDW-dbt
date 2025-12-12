@@ -10,27 +10,27 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['INSURANCE_TYPE', 'DATA_SOURCE'],
+        unique_key=['LOG_RECORD_ID', 'FIELD_NAME', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
              {% if table_exists %}
-                 {% set cfg = get_config_row('SW1', target.database, target.schema, 'INSURANCE_TYPE') %}
+                 {% set cfg = get_config_row('SW1', target.database, target.schema, 'VCS_LOG_FIELD') %}
                  {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}            
              {% endif %}"
         ],
         post_hook=[
             "{% if execute %}
-                 {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'INSURANCE_TYPE') %}
+                 {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'VCS_LOG_FIELD') %}
                  {% set max_wm_sw1 = compute_max_watermark_seaware(this, wm_col_sw1, 'SW1') %}
                  {% if max_wm_sw1 is not none %}
-                     {% do update_config_watermark('SW1', target.database, target.schema, 'INSURANCE_TYPE', max_wm_sw1) %}
+                     {% do update_config_watermark('SW1', target.database, target.schema, 'VCS_LOG_FIELD', max_wm_sw1) %}
                  {% endif %}
 
-                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'INSURANCE_TYPE') %}
+                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'VCS_LOG_FIELD') %}
                  {% set max_wm_sw2 = compute_max_watermark_seaware(this, wm_col_sw2, 'SW2') %}
                  {% if max_wm_sw2 is not none %}
-                     {% do update_config_watermark('SW2', target.database, target.schema, 'INSURANCE_TYPE', max_wm_sw2) %}
+                     {% do update_config_watermark('SW2', target.database, target.schema, 'VCS_LOG_FIELD', max_wm_sw2) %}
                 {% endif %}
              {% endif %}"
         ]
@@ -43,11 +43,11 @@
    ================================================================ #}
 
 {% if execute %}
-    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'INSURANCE_TYPE') %}
+    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'VCS_LOG_FIELD') %}
     {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
     {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw1 = (last_wm_sw1 is none) %}
-    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'INSURANCE_TYPE') %}
+    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'VCS_LOG_FIELD') %}
     {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
     {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw2 = (last_wm_sw2 is none) %}
@@ -64,45 +64,23 @@
    SOURCE CTE
    ================================================================ #}
 
-WITH sw1_src AS (
+WITH src AS (
     SELECT
             'SW1' AS DATA_SOURCE,
-            {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-            {{ transform_string('INSURANCE_TYPE') }} AS INSURANCE_TYPE,
-            {{ transform_string('COMMENTS') }} AS COMMENTS,
-            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
-            _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'INSURANCE_TYPE') }}
+            {{ transform_string('LOG_RECORD_ID') }} AS LOG_RECORD_ID,
+            {{ transform_string('FIELD_NAME') }} AS FIELD_NAME,
+            {{ transform_string('FIELD_VALUE') }} AS FIELD_VALUE,
+            _FIVETRAN_DELETED AS SOURCE_DELETED,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
+    FROM {{ source('AMA_PROD_BRNZ_SW1', 'VCS_LOG_FIELD') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
-    WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
-    {% endif %}
-),
-
-sw2_src AS (
-    SELECT
-            'SW2' AS DATA_SOURCE,
-            {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-            {{ transform_string('INSURANCE_TYPE') }} AS INSURANCE_TYPE,
-            {{ transform_string('COMMENTS') }} AS COMMENTS,
-            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
-            _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'INSURANCE_TYPE') }}
-    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
-    {% if is_incremental() and not is_full %}
-    WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
+    WHERE COALESCE({{ wm_col }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm) }}
     {% endif %}
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(["INSURANCE_TYPE", "DATA_SOURCE"]) }} AS INSURANCE_TYPE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
-
-UNION ALL
-
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["INSURANCE_TYPE", "DATA_SOURCE"]) }} AS INSURANCE_TYPE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    {{ dbt_utils.generate_surrogate_key(["LOG_RECORD_ID", "FIELD_NAME", "DATA_SOURCE"]) }} AS VCS_LOG_FIELD_SURROGATE_KEY,
+    src.*
+FROM src
 

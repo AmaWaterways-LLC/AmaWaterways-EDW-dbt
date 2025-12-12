@@ -10,47 +10,33 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['CABIN_ATTR_ID', 'CABIN_NUMBER', 'SEQ_NUMBER', 'SHIP_CODE'],
+        unique_key=['CABIN_ATTR_ID', 'CABIN_NUMBER', 'SEQ_NUMBER', 'SHIP_CODE', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
              {% if table_exists %}
                  {% set cfg = get_config_row('SW1', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
-                 {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}
-                 {% do audit_start(
-                     pipeline_name='bronze_to_silver_cabin_attribute_link',
-                     source_name='AUTO',
-                     database_name=target.database,
-                     schema_name=target.schema,
-                     table_name='CABIN_ATTRIBUTE_LINK',
-                     layer='SILVER',
-                     operation_type='MERGE',
-                     load_type=load_type_val,
-                     environment=target.name,
-                     ingested_by='dbt',
-                     batch_id='" ~ batch_id ~ "'
-                 ) %}              
+                 {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}            
              {% endif %}"
         ],
         post_hook=[
-            "{% do audit_update_counts(batch_id='" ~ batch_id ~ "', record_count_target=get_record_count(this)) %}",
-            "{% do audit_end(batch_id='" ~ batch_id ~ "', status='SUCCESS') %}",
             "{% if execute %}
                  {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
                  {% set max_wm_sw1 = compute_max_watermark_seaware(this, wm_col_sw1, 'SW1') %}
                  {% if max_wm_sw1 is not none %}
-                     {% do update_config_watermark('SW1', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK', max_wm) %}
+                     {% do update_config_watermark('SW1', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK', max_wm_sw1) %}
                  {% endif %}
 
-                {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
+                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
                  {% set max_wm_sw2 = compute_max_watermark_seaware(this, wm_col_sw2, 'SW2') %}
                  {% if max_wm_sw2 is not none %}
-                     {% do update_config_watermark('SW2', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK', max_wm) %}
-                 {% endif %}
+                     {% do update_config_watermark('SW2', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK', max_wm_sw2) %}
+                {% endif %}
              {% endif %}"
         ]
     )
 }}
+
 
 {# ================================================================
    FETCH CONFIG & WATERMARK INFO
@@ -60,11 +46,11 @@
     {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
     {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
     {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
-    {% set is_full_sw1 = (last_wm is none) %}
+    {% set is_full_sw1 = (last_wm_sw1 is none) %}
     {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'CABIN_ATTRIBUTE_LINK') %}
     {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
     {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
-    {% set is_full_sw2 = (last_wm is none) %}
+    {% set is_full_sw2 = (last_wm_sw2 is none) %}
 {% else %}
     {% set wm_col_sw1 = none %}
     {% set last_wm_sw1 = none %}
@@ -78,45 +64,57 @@
    SOURCE CTE
    ================================================================ #}
 
-with sw1_src as (
-    select
-    'SW1' AS DATA_SOURCE,
-{{ transform_string('SHIP_CODE') }} AS SHIP_CODE,
-{{ transform_string('CABIN_NUMBER') }} AS CABIN_NUMBER,
-{{ transform_numeric('CABIN_ATTR_ID') }} AS CABIN_ATTR_ID,
-{{ transform_numeric('SEQ_NUMBER') }} AS SEQ_NUMBER,
-{{ transform_numeric('CABIN_ATTR_COUNTER') }} AS CABIN_ATTR_COUNTER,
-{{ transform_string('CABIN_ATTR_EXT_INFO') }} AS CABIN_ATTR_EXT_INFO,
-{{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-{{ transform_datetime('EFF_SAIL_FROM') }} AS EFF_SAIL_FROM,
-{{ transform_datetime('EFF_SAIL_TO') }} AS EFF_SAIL_TO,
-{{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
- _FIVETRAN_DELETED AS SOURCE_DELETED
-    from {{ source('AMA_PROD_BRNZ_SW1', 'CABIN_ATTRIBUTE_LINK') }}
+WITH sw1_src AS (
+    SELECT
+            'SW1' AS DATA_SOURCE,
+            {{ transform_string('SHIP_CODE') }} AS SHIP_CODE,
+            {{ transform_string('CABIN_NUMBER') }} AS CABIN_NUMBER,
+            {{ transform_numeric('CABIN_ATTR_ID') }} AS CABIN_ATTR_ID,
+            {{ transform_numeric('SEQ_NUMBER') }} AS SEQ_NUMBER,
+            {{ transform_numeric('CABIN_ATTR_COUNTER') }} AS CABIN_ATTR_COUNTER,
+            {{ transform_string('CABIN_ATTR_EXT_INFO') }} AS CABIN_ATTR_EXT_INFO,
+            {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
+            {{ transform_date('EFF_SAIL_FROM') }} AS EFF_SAIL_FROM,
+            {{ transform_date('EFF_SAIL_TO') }} AS EFF_SAIL_TO,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
+            _FIVETRAN_DELETED AS SOURCE_DELETED
+    FROM {{ source('AMA_PROD_BRNZ_SW1', 'CABIN_ATTRIBUTE_LINK') }}
+    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
-    where coalesce({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
+    WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
     {% endif %}
 ),
 
-sw2_src as (
-    select
-    'SW2' AS DATA_SOURCE,
-{{ transform_string('SHIP_CODE') }} AS SHIP_CODE,
-{{ transform_string('CABIN_NUMBER') }} AS CABIN_NUMBER,
-{{ transform_numeric('CABIN_ATTR_ID') }} AS CABIN_ATTR_ID,
-{{ transform_numeric('SEQ_NUMBER') }} AS SEQ_NUMBER,
-{{ transform_numeric('CABIN_ATTR_COUNTER') }} AS CABIN_ATTR_COUNTER,
-{{ transform_string('CABIN_ATTR_EXT_INFO') }} AS CABIN_ATTR_EXT_INFO,
-{{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
-{{ transform_datetime('EFF_SAIL_FROM') }} AS EFF_SAIL_FROM,
-{{ transform_datetime('EFF_SAIL_TO') }} AS EFF_SAIL_TO,
-{{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
- _FIVETRAN_DELETED AS SOURCE_DELETED
-    from {{ source('AMA_PROD_BRNZ_SW2', 'CABIN_ATTRIBUTE_LINK') }}
+sw2_src AS (
+    SELECT
+            'SW2' AS DATA_SOURCE,
+            {{ transform_string('SHIP_CODE') }} AS SHIP_CODE,
+            {{ transform_string('CABIN_NUMBER') }} AS CABIN_NUMBER,
+            {{ transform_numeric('CABIN_ATTR_ID') }} AS CABIN_ATTR_ID,
+            {{ transform_numeric('SEQ_NUMBER') }} AS SEQ_NUMBER,
+            {{ transform_numeric('CABIN_ATTR_COUNTER') }} AS CABIN_ATTR_COUNTER,
+            {{ transform_string('CABIN_ATTR_EXT_INFO') }} AS CABIN_ATTR_EXT_INFO,
+            {{ transform_numeric('RECORD_ID') }} AS RECORD_ID,
+            {{ transform_date('EFF_SAIL_FROM') }} AS EFF_SAIL_FROM,
+            {{ transform_date('EFF_SAIL_TO') }} AS EFF_SAIL_TO,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
+            _FIVETRAN_DELETED AS SOURCE_DELETED
+    FROM {{ source('AMA_PROD_BRNZ_SW2', 'CABIN_ATTRIBUTE_LINK') }}
+    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
-    where coalesce({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
+    WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
-    select * from sw1_src
-    union all
-    select * from sw2_src
+
+SELECT
+    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "CABIN_NUMBER", "SEQ_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+    sw1_src.*
+FROM sw1_src
+
+UNION ALL
+
+SELECT
+    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "CABIN_NUMBER", "SEQ_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+    sw2_src.*
+FROM sw2_src
+
