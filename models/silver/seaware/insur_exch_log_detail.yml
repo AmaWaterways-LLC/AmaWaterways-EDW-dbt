@@ -1,0 +1,97 @@
+models:
+  - name: insur_exch_log_detail
+    description: >
+      This model represents the insurance exchange log details from multiple systems, 
+      providing a standardized view for downstream analytics and reporting. 
+      The data from different systems may differ due to variations in data collection, 
+      processing, and storage. This model is used to track insurance exchange logs, 
+      enabling key analytical use cases such as reporting, metrics, and auditability.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORD_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: INSUR_EXCH_LOG_DETAIL_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from RECORD_ID and DATA_SOURCE, 
+          ensuring row uniqueness across multiple systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the insurance exchange log detail, 
+          used to track data origin and enable system-specific analysis.
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the insurance exchange log detail, 
+          used in combination with DATA_SOURCE to ensure row uniqueness.
+        tests:
+          - not_null
+
+      - name: LOG_HEADER_ID
+        description: >
+          The identifier of the log header associated with the insurance exchange log detail, 
+          providing context for log analysis.
+
+      - name: ERROR_MESSAGE
+        description: >
+          The error message related to the insurance exchange log detail, 
+          used for error tracking and analysis.
+
+      - name: FIRST_NAME
+        description: >
+          The first name of the individual associated with the insurance exchange log detail, 
+          used for demographic analysis.
+
+      - name: LAST_NAME
+        description: >
+          The last name of the individual associated with the insurance exchange log detail, 
+          used for demographic analysis.
+
+      - name: CLAIM_NUMBER
+        description: >
+          The claim number associated with the insurance exchange log detail, 
+          used for claims analysis and tracking.
+
+      - name: SHIP_CODE
+        description: >
+          The ship code associated with the insurance exchange log detail, 
+          used for shipping and logistics analysis.
+
+      - name: SAIL_DATE
+        description: >
+          The sail date associated with the insurance exchange log detail, 
+          used for date-based analysis.
+
+      - name: GUEST_ID
+        description: >
+          The guest identifier associated with the insurance exchange log detail, 
+          used for guest analysis and tracking.
+
+      - name: RES_ID
+        description: >
+          The reservation identifier associated with the insurance exchange log detail, 
+          used for reservation analysis and tracking.
+
+      - name: CLIENT_ID
+        description: >
+          The client identifier associated with the insurance exchange log detail, 
+          used for client analysis and tracking.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the insurance exchange log detail, 
+          used for data freshness and auditability.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the insurance exchange log detail was deleted in the source system, 
+          used for data consistency and auditability.

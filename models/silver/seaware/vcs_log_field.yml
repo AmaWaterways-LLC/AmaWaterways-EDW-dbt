@@ -1,0 +1,64 @@
+models:
+  - name: vcs_log_field
+    description: >
+      This model represents a standardized log field from multiple source systems, 
+      providing a unified view for analytics and reporting. The data from different 
+      systems may differ due to variations in data formatting and collection methods. 
+      This model is used downstream to generate reports, track metrics, and ensure 
+      auditability across the enterprise. Key analytical use cases include log 
+      analysis, data quality checks, and system performance monitoring.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - LOG_RECORD_ID
+            - FIELD_NAME
+            - DATA_SOURCE
+
+    columns:
+      - name: VCS_LOG_FIELD_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of LOG_RECORD_ID, 
+          FIELD_NAME, and DATA_SOURCE, ensuring row uniqueness and facilitating 
+          efficient data retrieval.
+        tests:
+          - not_null
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the log field data originates, allowing for 
+          data lineage and system-specific analysis.
+
+      - name: LOG_RECORD_ID
+        description: >
+          A unique identifier for the log record, serving as a primary key in 
+          conjunction with FIELD_NAME and DATA_SOURCE to ensure row uniqueness.
+        tests:
+          - not_null
+
+      - name: FIELD_NAME
+        description: >
+          The name of the log field, providing context for the FIELD_VALUE and 
+          facilitating data analysis and reporting.
+        tests:
+          - not_null
+
+      - name: FIELD_VALUE
+        description: >
+          The value associated with the log field, representing the actual data 
+          being logged and analyzed.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the log field has been deleted in the source 
+          system, allowing for data consistency and auditing.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the log field, providing a temporal 
+          context for data analysis and reporting.

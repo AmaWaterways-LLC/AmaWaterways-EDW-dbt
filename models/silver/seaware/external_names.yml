@@ -1,0 +1,69 @@
+models:
+  - name: external_names
+    description: >
+      The external_names model represents a standardized view of external names across multiple systems, 
+      including SW1 and SW2. The data from these systems may differ due to variations in data entry, 
+      formatting, or synchronization timing. This model is used downstream to provide a unified view 
+      of external names, enabling accurate reporting, metrics, and auditability. Key analytical use 
+      cases include tracking changes to external names over time and identifying discrepancies between 
+      systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - EXTERNAL_NAMES_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: EXTERNAL_NAMES_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of EXTERNAL_NAMES_ID and DATA_SOURCE. 
+          This key ensures row uniqueness and facilitates efficient data retrieval.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the external name data originates, either SW1 or SW2. 
+          This column is used to track data provenance and identify potential discrepancies between systems.
+
+      - name: EXTERNAL_NAMES_ID
+        description: >
+          A unique identifier for the external name within the source system. 
+          This column, in combination with DATA_SOURCE, forms the primary key for the model.
+
+        tests:
+          - not_null
+
+      - name: EXTERNAL_NAME
+        description: >
+          The full external name as recorded in the source system. 
+          This column is used for reporting and analytics purposes.
+
+      - name: EXTERNAL_ABBREV
+        description: >
+          An abbreviated version of the external name, if available. 
+          This column is used for reporting and analytics purposes.
+
+      - name: EXTERNAL_BASIS_SYSTEM
+        description: >
+          The basis system associated with the external name, if applicable. 
+          This column is used for reporting and analytics purposes.
+
+      - name: EXTERNAL_APPLICATION
+        description: >
+          The external application related to the external name, if applicable. 
+          This column is used for reporting and analytics purposes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the external name data was last updated in the source system. 
+          This column is used for auditing and data freshness purposes.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the external name has been deleted in the source system. 
+          This column is used for data synchronization and auditing purposes.

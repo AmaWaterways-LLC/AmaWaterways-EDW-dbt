@@ -1,0 +1,62 @@
+models:
+  - name: res_param
+    description: >
+      The res_param model represents a standardized view of resource parameters across multiple systems, 
+      including SW1 and SW2. This model is used to consolidate and harmonize data from these systems, 
+      enabling downstream analytics and reporting. The data from multiple systems may differ due to 
+      variations in data formatting, encoding, or synchronization timing. This model provides a unified 
+      view of resource parameters, facilitating key analytical use cases such as reporting, metrics, 
+      and auditability.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RES_PARAM_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: RES_PARAM_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of RES_PARAM_ID and DATA_SOURCE, 
+          ensuring row uniqueness across multiple systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the resource parameter, either SW1 or SW2, indicating the origin of the data.
+
+      - name: RES_PARAM_ID
+        description: >
+          A unique identifier for the resource parameter, used in conjunction with DATA_SOURCE to ensure 
+          row uniqueness. This column is part of the primary key.
+        tests:
+          - not_null
+
+      - name: PARAM_VALUE
+        description: >
+          The value of the resource parameter, which may vary in format or encoding across different systems.
+
+      - name: RES_ID
+        description: >
+          A foreign key referencing the resource identifier, linking the resource parameter to its associated resource.
+
+      - name: PARAM_CODE
+        description: >
+          A code or abbreviation for the resource parameter, which may be used for categorization or filtering.
+
+      - name: IS_CASE_SENSITIVE
+        description: >
+          A flag indicating whether the resource parameter value is case-sensitive, influencing data processing and analysis.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the resource parameter, used for data freshness and synchronization tracking.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the resource parameter has been deleted in the source system, 
+          facilitating data consistency and auditing.

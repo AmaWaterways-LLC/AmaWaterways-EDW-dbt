@@ -1,0 +1,65 @@
+models:
+  - name: acc_refund_trans
+    description: >
+      The acc_refund_trans model represents account refund transactions in the enterprise domain. 
+      Data from multiple systems may differ due to varying data entry practices or system-specific nuances. 
+      This standardized model is used downstream for financial reporting, metrics analysis, and auditability purposes. 
+      Key analytical use cases include tracking refund trends, monitoring transaction volumes, and identifying anomalies.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORD_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: ACC_REFUND_TRANS_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns. 
+          This key ensures row uniqueness and facilitates efficient data retrieval.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system identifier, indicating the origin of the refund transaction data. 
+          This column is crucial for data lineage and auditing purposes.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the refund transaction record. 
+          This column, combined with DATA_SOURCE, forms the primary key for the model.
+
+        tests:
+          - not_null
+
+      - name: TRANS_ID
+        description: >
+          The transaction ID associated with the refund. 
+          This column is essential for tracking transaction-level details.
+
+      - name: CLASS_OF_TRANS
+        description: >
+          The classification of the refund transaction, providing context for financial analysis. 
+          This column is vital for categorizing and reporting on refund transactions.
+
+      - name: CURRENCY_CODE
+        description: >
+          The currency code associated with the refund transaction, facilitating multi-currency support. 
+          This column is necessary for accurate financial calculations and reporting.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the refund transaction record has been deleted in the source system. 
+          This column is crucial for data synchronization and auditing purposes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the refund transaction record. 
+          This column is essential for tracking data freshness and auditing changes.

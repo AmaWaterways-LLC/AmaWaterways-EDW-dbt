@@ -1,0 +1,59 @@
+models:
+  - name: res_guest_param
+    description: >
+      This model represents guest parameters from multiple systems, standardized for downstream analytics. 
+      Data from different systems may differ due to varying data entry practices or system-specific nuances. 
+      This model is used to provide a unified view of guest parameters, enabling reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing guest preferences, tracking parameter changes, and identifying data discrepancies.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RES_GUEST_PARAM_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: RES_GUEST_PARAM_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from RES_GUEST_PARAM_ID and DATA_SOURCE, ensuring row uniqueness across systems.
+        tests:
+          - not_null
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the guest parameter record, either 'SW1' or 'SW2', indicating the origin of the data.
+
+      - name: PARAM_VALUE
+        description: >
+          The value of the guest parameter, transformed to a standardized string format for consistency.
+
+      - name: RES_GUEST_PARAM_ID
+        description: >
+          The unique identifier of the guest parameter, transformed to a standardized numeric format for consistency.
+        tests:
+          - not_null
+
+      - name: GUEST_ID
+        description: >
+          The identifier of the guest associated with the parameter, transformed to a standardized numeric format for consistency.
+
+      - name: PARAM_CODE
+        description: >
+          The code of the guest parameter, transformed to a standardized string format for consistency.
+
+      - name: IS_CASE_SENSITIVE
+        description: >
+          A flag indicating whether the parameter value is case-sensitive, transformed to a standardized string format for consistency.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the guest parameter record, transformed to a standardized datetime format for consistency.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the guest parameter record has been deleted in the source system.

@@ -1,0 +1,49 @@
+models:
+  - name: cond_str_lib
+    description: >
+      The cond_str_lib model represents a standardized library of condition strings from multiple source systems, SW1 and SW2. 
+      The data from these systems may differ due to variations in data formatting and watermark values. 
+      This model is used downstream to provide a unified view of condition strings, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing condition string usage, tracking changes to condition strings over time, and identifying discrepancies between source systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - STR_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: COND_STR_LIB_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of STR_ID and DATA_SOURCE, ensuring row uniqueness across multiple source systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the condition string data originates, either SW1 or SW2.
+
+      - name: STR_ID
+        description: >
+          A unique identifier for the condition string, used in combination with DATA_SOURCE to ensure row uniqueness.
+        tests:
+          - not_null
+
+      - name: PARENT_ID
+        description: >
+          The parent identifier for the condition string, providing hierarchical context.
+
+      - name: STR_TEXT
+        description: >
+          The text value of the condition string, used for analysis and reporting.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the condition string, used for tracking changes over time.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the condition string has been deleted in the source system.

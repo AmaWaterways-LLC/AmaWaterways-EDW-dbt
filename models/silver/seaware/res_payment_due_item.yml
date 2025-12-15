@@ -1,0 +1,92 @@
+models:
+  - name: res_payment_due_item
+    description: >
+      This model represents payment due items for reservations, standardized across multiple systems. 
+      Data from different systems may differ due to variations in data entry, processing, or timing. 
+      This model is used downstream for reporting, analytics, and auditability, providing a unified view of payment due items. 
+      Key analytical use cases include tracking payment due dates, amounts, and statuses.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RES_PAYMENT_DUE_ITEM_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: RES_PAYMENT_DUE_ITEM_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from RES_PAYMENT_DUE_ITEM_ID and DATA_SOURCE. 
+          This key ensures row uniqueness across multiple data sources.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the payment due item record, either 'SW1' or 'SW2'. 
+          This column is used to track data origin and facilitate data integration.
+
+      - name: RES_PAYMENT_DUE_ITEM_ID
+        description: >
+          The unique identifier of the payment due item in the source system. 
+          This column, combined with DATA_SOURCE, forms the primary key of the model.
+        tests:
+          - not_null
+
+      - name: PMNT_DUE_ITEM_TYPE
+        description: >
+          The type of payment due item, such as a deposit or a payment.
+
+      - name: GUEST_ID
+        description: >
+          The identifier of the guest associated with the payment due item.
+
+      - name: RES_ID
+        description: >
+          The identifier of the reservation associated with the payment due item.
+
+      - name: DUE_DATE
+        description: >
+          The date when the payment is due.
+
+      - name: GRACE_PERIOD
+        description: >
+          The number of days allowed after the due date before the payment is considered late.
+
+      - name: AMOUNT
+        description: >
+          The amount of the payment due item.
+
+      - name: EXPIRATION_DATE
+        description: >
+          The date when the payment due item expires.
+
+      - name: DESIGNATED_PAYMENT_CODE
+        description: >
+          A code indicating the designated payment method for the payment due item.
+
+      - name: IS_PAID
+        description: >
+          A flag indicating whether the payment due item has been paid.
+
+      - name: IS_PAID_SET_MANUALLY
+        description: >
+          A flag indicating whether the payment status was set manually.
+
+      - name: MANUAL_FUNDS_DISTR
+        description: >
+          A flag indicating whether manual funds distribution is allowed for the payment due item.
+
+      - name: AMOUNT_PAID
+        description: >
+          The amount paid towards the payment due item.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the payment due item record was last updated.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the payment due item record was deleted in the source system.

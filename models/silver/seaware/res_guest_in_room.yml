@@ -1,0 +1,86 @@
+models:
+  - name: res_guest_in_room
+    description: >
+      This model represents the standardized data for guests in rooms, combining data from multiple systems (SW1 and SW2). 
+      The data from these systems may differ due to differences in data collection, processing, or timing. 
+      This model is used downstream to provide a unified view of guest room data for reporting, analytics, and auditability. 
+      Key analytical use cases include tracking occupancy rates, guest stay patterns, and room utilization.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORD_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: RES_GUEST_IN_ROOM_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns. 
+          This key ensures row uniqueness across multiple data sources.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the data, either SW1 or SW2. 
+          This column is used to track the origin of the data and ensure data integrity.
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the guest room record within the source system. 
+          This column, combined with DATA_SOURCE, forms the primary key of the model.
+        tests:
+          - not_null
+
+      - name: RES_ID
+        description: >
+          The identifier of the reservation associated with the guest room. 
+          This column is used to link the guest room data to the corresponding reservation data.
+
+      - name: ROOM_SEQ_NUMBER
+        description: >
+          The sequence number of the room within the reservation. 
+          This column is used to track the room assignment and stay details.
+
+      - name: GUEST_ID
+        description: >
+          The identifier of the guest associated with the room. 
+          This column is used to link the guest room data to the corresponding guest data.
+
+      - name: DATE_FROM
+        description: >
+          The start date of the guest's stay in the room. 
+          This column is used to track the duration of the guest's stay.
+
+      - name: DATE_TO
+        description: >
+          The end date of the guest's stay in the room. 
+          This column is used to track the duration of the guest's stay.
+
+      - name: HAS_PRE_AIR_NIGHT
+        description: >
+          A flag indicating whether the guest has a pre-air night stay. 
+          This column is used to track special stay arrangements.
+
+      - name: HAS_POST_AIR_NIGHT
+        description: >
+          A flag indicating whether the guest has a post-air night stay. 
+          This column is used to track special stay arrangements.
+
+      - name: OCCUPANCY_COUNT
+        description: >
+          The number of guests occupying the room. 
+          This column is used to track room utilization and occupancy rates.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the guest room data. 
+          This column is used to track data freshness and changes.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the guest room data has been deleted in the source system. 
+          This column is used to track data integrity and changes.

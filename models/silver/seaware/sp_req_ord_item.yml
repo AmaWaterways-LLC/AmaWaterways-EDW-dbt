@@ -1,0 +1,85 @@
+models:
+  - name: sp_req_ord_item
+    description: >
+      This model represents standardized order item data from multiple source systems, 
+      providing a unified view for analytics and reporting. Data from different systems 
+      may differ due to variations in data collection and processing. This model is used 
+      downstream to analyze order item trends, track delivery performance, and audit data 
+      quality. Key analytical use cases include reporting on order item quantities, 
+      delivery dates, and guest information.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - SP_ORD_ITEM_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: SP_REQ_ORD_ITEM_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of SP_ORD_ITEM_ID and 
+          DATA_SOURCE, ensuring row uniqueness across multiple source systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system identifier, indicating the origin of the order item data.
+
+      - name: SP_ORD_ITEM_ID
+        description: >
+          The unique identifier for the order item, used in combination with DATA_SOURCE 
+          to ensure row uniqueness. This column is part of the primary key.
+        tests:
+          - not_null
+
+      - name: SP_REQ_ID
+        description: >
+          The identifier for the related order request, used for tracking and analysis.
+
+      - name: SP_REQ_CODE
+        description: >
+          The code associated with the order request, providing additional context.
+
+      - name: AM_PLACE_CODE
+        description: >
+          The code for the location where the order item is being delivered or picked up.
+
+      - name: DELIVERY_DATE
+        description: >
+          The scheduled delivery date for the order item.
+
+      - name: DELIVERY_TIME
+        description: >
+          The scheduled delivery time for the order item.
+
+      - name: QUANTITY
+        description: >
+          The number of items ordered, used for quantity analysis and reporting.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the order item.
+
+      - name: GUEST_FULL_NAME
+        description: >
+          The full name of the guest associated with the order item.
+
+      - name: GUEST_ID
+        description: >
+          The unique identifier for the guest associated with the order item.
+
+      - name: ITEM_VALID
+        description: >
+          An indicator of whether the order item is valid or not.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the order item has been deleted in the source system.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the order item data was last updated in the source system.

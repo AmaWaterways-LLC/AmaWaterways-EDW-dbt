@@ -1,0 +1,74 @@
+models:
+  - name: gtb_request_history
+    description: >
+      The gtb_request_history model represents a standardized view of request history data from multiple systems, 
+      including SW1 and SW2. This model is used to track changes to request status over time, 
+      providing a critical audit trail for analytics and reporting purposes. 
+      The data from multiple systems may differ due to differences in data formatting and watermarking. 
+      This model is used downstream to generate reports on request status changes and to analyze trends in request history.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - REQUEST_ID
+            - TIME_STAMP
+            - DATA_SOURCE
+
+    columns:
+      - name: GTB_REQUEST_HISTORY_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of REQUEST_ID, TIME_STAMP, and DATA_SOURCE. 
+          This key ensures row uniqueness and facilitates efficient data retrieval.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the request history data originated, either SW1 or SW2. 
+          This column is used to track data lineage and to identify potential discrepancies between systems.
+
+      - name: REQUEST_ID
+        description: >
+          A unique identifier for the request, used to track changes to request status over time. 
+          This column is part of the primary key and ensures row uniqueness.
+        tests:
+          - not_null
+
+      - name: TIME_STAMP
+        description: >
+          The timestamp at which the request status change occurred. 
+          This column is part of the primary key and ensures row uniqueness.
+        tests:
+          - not_null
+
+      - name: USER_ID
+        description: >
+          The identifier of the user who initiated the request status change. 
+          This column is used to track user activity and to analyze trends in request history.
+
+      - name: OLD_STATUS
+        description: >
+          The previous status of the request before the change occurred. 
+          This column is used to track changes to request status over time.
+
+      - name: NEW_STATUS
+        description: >
+          The new status of the request after the change occurred. 
+          This column is used to track changes to request status over time.
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the record, used to track changes to request status over time.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the record has been deleted in the source system. 
+          This column is used to track data lineage and to identify potential discrepancies between systems.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp at which the record was last updated in the source system. 
+          This column is used to track data freshness and to identify potential discrepancies between systems.

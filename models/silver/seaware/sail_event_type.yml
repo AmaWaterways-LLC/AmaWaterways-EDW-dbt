@@ -1,0 +1,72 @@
+models:
+  - name: sail_event_type
+    description: >
+      This model represents the standardized sail event type data from multiple systems, 
+      providing a unified view for downstream analytics and reporting. The data from 
+      different systems may differ due to variations in data collection and processing. 
+      This model is used to generate reports, metrics, and audits, ensuring data consistency 
+      and accuracy. Key analytical use cases include analyzing sail event types, 
+      understanding data source differences, and tracking changes over time.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - SAIL_EVENT_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: SAIL_EVENT_TYPE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of SAIL_EVENT_TYPE and 
+          DATA_SOURCE, ensuring row uniqueness and facilitating data integration.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the sail event type data, either 'SW1' or 'SW2', 
+          indicating the origin of the data and enabling source-specific analysis.
+
+        tests:
+          - not_null
+
+      - name: SAIL_EVENT_TYPE
+        description: >
+          The type of sail event, representing a specific category or classification 
+          of events, and serving as a key attribute for analysis and reporting.
+
+        tests:
+          - not_null
+
+      - name: SAIL_EVENT_TYPE_ID
+        description: >
+          A numeric identifier for the sail event type, providing a unique reference 
+          for data integration and analysis.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the sail event type, offering 
+          context and insights for data analysis and reporting.
+
+      - name: USE_FOR_SHOPPING
+        description: >
+          An indicator of whether the sail event type is used for shopping, 
+          influencing business decisions and analytics.
+
+      - name: REQUIRED_TIME
+        description: >
+          The required time associated with the sail event type, representing a key 
+          attribute for scheduling and planning.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the sail event type data, tracking 
+          changes and ensuring data freshness.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the sail event type data has been deleted in 
+          the source system, enabling data consistency and auditing.

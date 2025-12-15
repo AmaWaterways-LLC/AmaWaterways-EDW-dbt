@@ -1,0 +1,126 @@
+models:
+  - name: package_type
+    description: >
+      The package_type model represents a standardized view of package types across multiple source systems, including SW1 and SW2. This model is used to provide a unified understanding of package types, enabling downstream analytics and reporting. Due to differences in source system data, this model helps to reconcile these discrepancies and provide a single source of truth. Key analytical use cases include reporting on package type utilization, analyzing capacity and sail segments, and auditing changes to package types over time.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PACKAGE_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: PACKAGE_TYPE_SURROGATE_KEY
+        description: >
+          A unique identifier for each package type, generated based on the combination of PACKAGE_TYPE and DATA_SOURCE. This column serves as the primary key for the model, ensuring each row is uniquely identifiable.
+
+        tests:
+          - not_null
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the package type data originates, either SW1 or SW2. This column is used to track the origin of each package type and is part of the primary key.
+
+        tests:
+          - not_null
+
+      - name: PACKAGE_TYPE_ID
+        description: >
+          A numeric identifier for the package type, as defined in the source system.
+
+      - name: PACKAGE_TYPE
+        description: >
+          A string description of the package type, as defined in the source system.
+
+      - name: LAND_DAYS
+        description: >
+          The number of land days associated with the package type.
+
+      - name: SAIL_DAYS
+        description: >
+          The number of sail days associated with the package type.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the package type.
+
+      - name: PRODUCT_TYPE
+        description: >
+          The type of product associated with the package type.
+
+      - name: TC_PACKAGE_TYPE
+        description: >
+          The package type as defined in the TC system.
+
+      - name: LAND_DAYS_POST
+        description: >
+          The number of land days after the package type.
+
+      - name: IS_SHOREX
+        description: >
+          A flag indicating whether the package type is a shore excursion.
+
+      - name: IS_SECONDARY
+        description: >
+          A flag indicating whether the package type is secondary.
+
+      - name: IS_ACTIVE
+        description: >
+          A flag indicating whether the package type is active.
+
+      - name: SHOREX_TIMING
+        description: >
+          The timing of the shore excursion associated with the package type.
+
+      - name: EXTRA_SEAT_QUESTION
+        description: >
+          Additional information related to extra seats for the package type.
+
+      - name: PRE_POST_MODE
+        description: >
+          The mode of the package type, either pre or post.
+
+      - name: PACKAGE_CLASS
+        description: >
+          The class of the package type.
+
+      - name: SAIL_SEGMENTS
+        description: >
+          The sail segments associated with the package type.
+
+      - name: CAPACITY
+        description: >
+          The capacity of the package type.
+
+      - name: ALLOW_SEGMENTS
+        description: >
+          A flag indicating whether segments are allowed for the package type.
+
+      - name: PACKAGE_TYPE_NAME
+        description: >
+          The name of the package type.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the package type was last updated.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the package type has been deleted in the source system.
+
+      - name: IS_LAND_ONLY
+        description: >
+          A flag indicating whether the package type is land only.
+
+      - name: IS_MULTI_SAIL
+        description: >
+          A flag indicating whether the package type is multi sail.
+
+      - name: AIR_BY_ESEAAIR
+        description: >
+          Additional information related to air travel for the package type.

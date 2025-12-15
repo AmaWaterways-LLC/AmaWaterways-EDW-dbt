@@ -1,0 +1,91 @@
+models:
+  - name: res_archive_clnt_lnk
+    description: >
+      This model represents a standardized view of client link data from multiple source systems, SW1 and SW2. 
+      The data from these systems may differ due to variations in data collection and processing methods. 
+      This model is used downstream to provide a unified view of client link data for reporting and analytics purposes. 
+      Key analytical use cases include analyzing client link data by fare type, guest type, and occupancy number.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - CLIENT_ID
+            - RECORD_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: RES_ARCHIVE_CLNT_LNK_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of CLIENT_ID, RECORD_ID, and DATA_SOURCE. 
+          This key ensures row uniqueness and facilitates efficient data retrieval.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the data was extracted, either SW1 or SW2. 
+          This column is used to track data lineage and identify potential discrepancies between source systems.
+
+      - name: CLIENT_ID
+        description: >
+          A unique identifier for the client. 
+          This column is part of the primary key and ensures row uniqueness.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the record. 
+          This column is part of the primary key and ensures row uniqueness.
+
+        tests:
+          - not_null
+
+      - name: LINK_ID
+        description: >
+          A unique identifier for the link. 
+          This column represents the relationship between the client and the record.
+
+      - name: FARE_TYPE
+        description: >
+          The type of fare associated with the client link. 
+          This column is used for reporting and analytics purposes.
+
+      - name: GUEST_ID
+        description: >
+          A unique identifier for the guest. 
+          This column represents the individual associated with the client link.
+
+      - name: GUEST_SEQN
+        description: >
+          A sequence number for the guest. 
+          This column is used to track the order of guests associated with the client link.
+
+      - name: OCCUPANCY_NUMBER
+        description: >
+          The occupancy number associated with the client link. 
+          This column is used for reporting and analytics purposes.
+
+      - name: GUEST_TYPE
+        description: >
+          The type of guest associated with the client link. 
+          This column is used for reporting and analytics purposes.
+
+      - name: AGE
+        description: >
+          The age of the guest associated with the client link. 
+          This column is used for reporting and analytics purposes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the data was last updated. 
+          This column is used to track data freshness and identify potential issues.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the data was deleted from the source system. 
+          This column is used to track data lineage and identify potential discrepancies between source systems.
