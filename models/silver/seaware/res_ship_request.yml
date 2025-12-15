@@ -49,7 +49,7 @@ models:
         description: >
           The end day of the ship request relative to the sail date.
 
-     - name: SAIL_DATE_FROM
+      - name: SAIL_DATE_FROM
         description: >
           The start date of the sail period associated with the ship request.
 
