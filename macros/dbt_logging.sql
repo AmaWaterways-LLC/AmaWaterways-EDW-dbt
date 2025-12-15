@@ -33,11 +33,12 @@
         {% do log('graph results' ~ graph.nodes[node_id].sources, info=True) %}
 
         {% set node = result.node %}
-
+        {% set sources = [] %}
         {% for dep in node.depends_on.nodes %}
             {% if dep.startswith('source.') %}
                 {% set source = graph.sources.get(dep) %}
                 {% if source %}
+                    {% do sources.append(source.schema) %}
                     {% do log(
                         'Source: ' ~ source.database ~ '.' ~ source.schema ~ '.' ~ source.name,
                         info=True
@@ -48,10 +49,13 @@
             {% endif %}
         {% endfor %}
 
+        {% set upstream_sources = sources | join(',') %}
+
         {% if upstream_sources | length > 0 %}
             {% if layer == 'SILVER' %}
-                {% set first_source = upstream_sources[0] %}
-                {% set source_system = first_source.split('.')[1] | upper %}
+                {#% set first_source = upstream_sources[0] %}
+                {% set source_system = first_source.split('.')[1] | upper %#}
+                {% set source_system = upstream_sources %}
             {% else %}
                 {% set source_system = 'UNKNOWN' %}
             {% endif %}
