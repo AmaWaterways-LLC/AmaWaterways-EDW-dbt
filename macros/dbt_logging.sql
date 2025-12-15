@@ -1,4 +1,4 @@
-{% macro dbt_logging(results) -%}
+{% macro dbt_logging(results, graph) -%}
 
 {% set audit_log_schema = "dbt_mkompelli" %}
 {% set audit_log_table = "dbt_audit_log" %}
@@ -28,13 +28,29 @@
         {% set upstream_sources = result.node.depends_on.sources %}
         {#% do log(result.node | list, info=True) %}
         {% do log(result.node | list, info=True) %#}
-        {% do log('results' ~ result['node']['depends_on']['sources'], info=True) %}
+        {% set node_id = result.node.unique_id %}
+        {% set graph = context['graph'] %}
+        {% do log('graph results' ~ graph.nodes[node_id].sources, info=True) %}
+
+        {% set node = result.node %}
+
+        {% for dep in node.depends_on.nodes %}
+            {% if dep.startswith('source.') %}
+                {% set source = graph.sources.get(dep) %}
+                {% if source %}
+                    {% do log(
+                        'Source: ' ~ source.database ~ '.' ~ source.schema ~ '.' ~ source.name,
+                        info=True
+                    ) %}
+                {% else %}
+                    {% do log('Could not resolve source: ' ~ dep, info=True) %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
 
         {% if upstream_sources | length > 0 %}
             {% if layer == 'SILVER' %}
                 {% set first_source = upstream_sources[0] %}
-                {% set parts = first_source.split('.') %}
-                {% set source_system = parts[1] | upper %}
                 {% set source_system = first_source.split('.')[1] | upper %}
             {% else %}
                 {% set source_system = 'UNKNOWN' %}
