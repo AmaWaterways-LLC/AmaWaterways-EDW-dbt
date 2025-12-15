@@ -80,3 +80,70 @@
         {% do exceptions.raise_compiler_error("Unknown datetime selector: " ~ selector) %}
     {% endif %#}
 {% endmacro %}
+
+
+-- macros/transform_date.sql
+
+{% macro transform_date(column_name, is_join_key=false) %}
+    CASE
+        WHEN {{ column_name }} IS NULL THEN
+            {% if is_join_key %}
+                TO_DATE('1900-01-01', 'YYYY-MM-DD')
+            {% else %}
+                NULL
+            {% endif %}
+
+        WHEN TRY_TO_DATE({{ column_name }}::VARCHAR, 'YYYY-MM-DD') IS NOT NULL THEN
+            TO_DATE({{ column_name }}::VARCHAR, 'YYYY-MM-DD')
+
+        WHEN TRY_TO_DATE({{ column_name }}::VARCHAR, 'YYYY/MM/DD') IS NOT NULL THEN
+            TO_DATE({{ column_name }}::VARCHAR, 'YYYY/MM/DD')
+
+        ELSE
+            TRY_TO_DATE({{ column_name }}::VARCHAR)
+    END
+{% endmacro %}
+
+
+-- macros/transform_time.sql
+
+{% macro transform_time(column_name, is_join_key=false) %}
+    CASE
+        WHEN {{ column_name }} IS NULL THEN
+            {% if is_join_key %}
+                TO_TIME('00:00:00', 'HH24:MI:SS')
+            {% else %}
+                NULL
+            {% endif %}
+
+        WHEN TRY_TO_TIME({{ column_name }}::VARCHAR, 'HH24:MI:SS') IS NOT NULL THEN
+            TO_TIME({{ column_name }}::VARCHAR, 'HH24:MI:SS')
+
+        WHEN TRY_TO_TIME({{ column_name }}::VARCHAR, 'HH24:MI') IS NOT NULL THEN
+            TO_TIME({{ column_name }}::VARCHAR, 'HH24:MI')
+
+        ELSE
+            TRY_TO_TIME({{ column_name }}::VARCHAR)
+    END
+{% endmacro %}
+
+
+-- macros/transform_boolean.sql
+
+{% macro transform_boolean(column_name, is_join_key=false) %}
+    CASE
+        WHEN {{ column_name }} IS NULL THEN
+            {% if is_join_key %}
+                FALSE
+            {% else %}
+                NULL
+            {% endif %}
+
+        WHEN UPPER({{ column_name }}::VARCHAR) IN ('TRUE', 'T', 'YES', 'Y', '1') THEN TRUE
+        WHEN UPPER({{ column_name }}::VARCHAR) IN ('FALSE', 'F', 'NO', 'N', '0') THEN FALSE
+
+        ELSE NULL
+    END
+{% endmacro %}
+
+
