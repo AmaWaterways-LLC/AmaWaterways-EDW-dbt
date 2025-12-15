@@ -1,0 +1,106 @@
+models:
+  - name: agency_phone
+    description: >
+      This model represents a standardized view of agency phone data from multiple source systems (SW1 and SW2). 
+      The data from these systems may differ due to variations in data entry, formatting, or update frequencies. 
+      This model is used downstream to provide a unified view of agency phone data for reporting, analytics, and auditability purposes. 
+      Key analytical use cases include tracking phone number changes, analyzing phone type distributions, and identifying data discrepancies between source systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - AGENCY_PHONE_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: AGENCY_PHONE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of AGENCY_PHONE_ID and DATA_SOURCE. 
+          This key ensures row uniqueness across multiple source systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the agency phone data originated (either SW1 or SW2). 
+          This column is used to track data lineage and identify potential discrepancies between source systems.
+
+      - name: AGENCY_ID
+        description: >
+          The identifier of the agency associated with the phone number. 
+          This column is used to link agency phone data to other agency-related data.
+
+      - name: SEQ_NUMBER
+        description: >
+          A sequence number assigned to the phone number. 
+          This column is used to track changes to phone numbers over time.
+
+      - name: PHONE_TYPE
+        description: >
+          The type of phone number (e.g., primary, secondary, fax). 
+          This column is used to analyze phone type distributions and identify potential data entry errors.
+
+      - name: INTL_CODE
+        description: >
+          The international code associated with the phone number. 
+          This column is used to analyze global phone number distributions.
+
+      - name: PHONE_NUMBER
+        description: >
+          The actual phone number. 
+          This column is used to track changes to phone numbers over time.
+
+      - name: IS_PHONE_PRIMARY
+        description: >
+          A flag indicating whether the phone number is primary. 
+          This column is used to identify primary phone numbers for reporting and analytics purposes.
+
+      - name: IS_PHONE_SECONDARY
+        description: >
+          A flag indicating whether the phone number is secondary. 
+          This column is used to identify secondary phone numbers for reporting and analytics purposes.
+
+      - name: IS_PHONE_FAX
+        description: >
+          A flag indicating whether the phone number is a fax number. 
+          This column is used to identify fax numbers for reporting and analytics purposes.
+
+      - name: FAX_ATTENTION_LINE
+        description: >
+          The attention line associated with the fax number. 
+          This column is used to track fax-related data.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes associated with the phone number. 
+          This column is used to track additional context related to phone numbers.
+
+      - name: AGENCY_PHONE_ID
+        description: >
+          The identifier of the agency phone record. 
+          This column is used to link agency phone data to other related data.
+        tests:
+          - not_null
+
+      - name: PHONE_EXT
+        description: >
+          The phone extension associated with the phone number. 
+          This column is used to track phone extension data.
+
+      - name: COUNTRY_CODE
+        description: >
+          The country code associated with the phone number. 
+          This column is used to analyze global phone number distributions.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the phone number was last updated. 
+          This column is used to track changes to phone numbers over time.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the phone number was deleted in the source system. 
+          This column is used to track data lineage and identify potential data discrepancies.

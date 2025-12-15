@@ -1,0 +1,88 @@
+models:
+  - name: sw_documents
+    description: >
+      The sw_documents model represents standardized documents from multiple source systems, 
+      including SW1 and SW2. Data from these systems may differ due to variations in data 
+      collection and processing methods. This model is used downstream for reporting, metrics, 
+      and auditability purposes, providing a unified view of documents across the enterprise. 
+      Key analytical use cases include document categorization, entity type analysis, and 
+      tracking changes to documents over time.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - DOC_CODE
+            - DATA_SOURCE
+
+    columns:
+      - name: SW_DOCUMENTS_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of DOC_CODE and DATA_SOURCE, 
+          used to identify each document uniquely across source systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the document originated, such as SW1 or SW2. This 
+          column is used to track the origin of each document and enable source-specific 
+          analysis.
+
+        tests:
+          - not_null
+
+      - name: DOC_CODE
+        description: >
+          A unique identifier for the document within its source system. This column, in 
+          combination with DATA_SOURCE, ensures row uniqueness across the model.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A numeric identifier for the document record, used for tracking and referencing 
+          purposes within the source system.
+
+      - name: DOC_NAME
+        description: >
+          The name or title of the document, providing a human-readable identifier for the 
+          document's content.
+
+      - name: DOC_CATEGORY
+        description: >
+          The category or classification of the document, enabling grouping and analysis of 
+          documents by type.
+
+      - name: ENTITY_TYPE
+        description: >
+          The type of entity associated with the document, such as a person, organization, 
+          or location.
+
+      - name: COMMENTS
+        description: >
+          Additional notes or comments related to the document, providing context and 
+          supplementary information.
+
+      - name: DEFAULT_SUBJECT
+        description: >
+          The default subject or topic associated with the document, used for filtering and 
+          categorization purposes.
+
+      - name: IS_CONFIRM_RELATED
+        description: >
+          A flag indicating whether the document is related to a confirmation process or 
+          event.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the document has been deleted in the source system, 
+          used for tracking data lineage and changes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the document was last updated in the source system, used for 
+          tracking changes and data freshness.

@@ -1,0 +1,136 @@
+models:
+  - name: am_code
+    description: >
+      The am_code model represents a standardized view of amenity codes across multiple systems, including SW1 and SW2. 
+      Data from these systems may differ due to variations in data entry, formatting, or system-specific requirements. 
+      This model is used downstream to provide a unified understanding of amenity codes, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing amenity code usage, tracking changes to codes over time, and identifying discrepancies between systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - AMENITY_CODE
+            - DATA_SOURCE
+
+    columns:
+      - name: AM_CODE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of AMENITY_CODE and DATA_SOURCE. 
+          This key ensures that each row in the model is uniquely identifiable, even in cases where AMENITY_CODE is duplicated across different data sources.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the amenity code data originated, either SW1 or SW2. 
+          This column is used to track the provenance of the data and enable system-specific analysis.
+
+      - name: AMENITY_CODE
+        description: >
+          The unique code assigned to an amenity, used to identify and track the amenity across systems. 
+          This column is a key component of the surrogate key and ensures that each amenity code is uniquely represented in the model.
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the record in the source system, used for auditing and tracking purposes.
+
+      - name: AM_CATEGORY
+        description: >
+          The category to which the amenity belongs, used for grouping and analysis.
+
+      - name: AMENITY_TYPE
+        description: >
+          The type of amenity, used to classify and analyze amenities.
+
+      - name: PROVIDER_CODE
+        description: >
+          The code assigned to the provider of the amenity, used to track and analyze provider-specific data.
+
+      - name: AMENITY_NAME
+        description: >
+          The name of the amenity, used for display and reporting purposes.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the amenity, used for context and analysis.
+
+      - name: USE_TAX
+        description: >
+          A flag indicating whether the amenity is subject to tax, used for financial analysis and reporting.
+
+      - name: SUBCODE_MANDATORY
+        description: >
+          A flag indicating whether a subcode is required for the amenity, used for data validation and analysis.
+
+      - name: MANDATORY_BEFORE_DLV
+        description: >
+          A flag indicating whether the amenity is mandatory before delivery, used for operational analysis and reporting.
+
+      - name: CODE_ACTIVE
+        description: >
+          A flag indicating whether the amenity code is active, used for data filtering and analysis.
+
+      - name: ADDON_RESTRICTED
+        description: >
+          A flag indicating whether the amenity is restricted as an add-on, used for sales and marketing analysis.
+
+      - name: ADDON_ORDER_BASIS
+        description: >
+          The basis on which the amenity is ordered as an add-on, used for sales and marketing analysis.
+
+      - name: ADDON_INV_ITEM_TYPE
+        description: >
+          The type of inventory item associated with the amenity as an add-on, used for inventory management and analysis.
+
+      - name: INCLUDE_IN_ORDER
+        description: >
+          A flag indicating whether the amenity is included in the order, used for order management and analysis.
+
+      - name: INITIAL_STATUS
+        description: >
+          The initial status of the amenity, used for tracking and analysis.
+
+      - name: LINKED_CLUB_TYPE
+        description: >
+          The type of club linked to the amenity, used for membership and loyalty program analysis.
+
+      - name: LINKED_CLUB_LEVEL
+        description: >
+          The level of the club linked to the amenity, used for membership and loyalty program analysis.
+
+      - name: COUPON_CLASS
+        description: >
+          The class of coupon associated with the amenity, used for promotional and discount analysis.
+
+      - name: MANUAL_PRICE
+        description: >
+          The manual price assigned to the amenity, used for pricing and revenue analysis.
+
+      - name: USE_AS_CLIENT_PREFER
+        description: >
+          A flag indicating whether the amenity is used as a client preference, used for customer preference and personalization analysis.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the amenity code data was last updated, used for data freshness and auditing purposes.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the amenity code data has been deleted in the source system, used for data synchronization and auditing purposes.
+
+      - name: ADDON_COMPONENT_TYPE
+        description: >
+          The type of component associated with the amenity as an add-on, used for sales and marketing analysis.
+
+      - name: AGE_FROM
+        description: >
+          The minimum age range associated with the amenity, used for demographic and targeting analysis.
+
+      - name: AGE_TO
+        description: >
+          The maximum age range associated with the amenity, used for demographic and targeting analysis.

@@ -1,0 +1,109 @@
+models:
+  - name: sp_req_order
+    description: >
+      The sp_req_order model represents a standardized view of service request orders across multiple systems. 
+      Data from different systems may differ due to variations in data entry, processing, or system-specific nuances. 
+      This model is used downstream to provide a unified understanding of service request orders, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing order volumes, tracking order status, and identifying trends in service requests.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - SP_REQ_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: SP_REQ_ORDER_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of SP_REQ_ID and DATA_SOURCE, ensuring row uniqueness across multiple systems.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the service request order data originates, used to track data provenance and identify system-specific variations.
+
+      - name: SP_REQ_ID
+        description: >
+          A unique identifier for the service request order, used in conjunction with DATA_SOURCE to ensure row uniqueness.
+        tests:
+          - not_null
+
+      - name: ORDER_DATE
+        description: >
+          The date on which the service request order was placed, used for tracking order timelines and analyzing order volumes over time.
+
+      - name: ORDER_DESCRIPT
+        description: >
+          A descriptive text field providing additional context about the service request order, used for analyzing order characteristics and identifying trends.
+
+      - name: ORD_STATUS_CODE
+        description: >
+          A coded value representing the current status of the service request order, used for tracking order progress and identifying bottlenecks.
+
+      - name: ORDER_VALID
+        description: >
+          A flag indicating whether the service request order is valid or not, used for filtering out invalid orders and ensuring data quality.
+
+      - name: AM_BOOKING_TYPE
+        description: >
+          A categorization of the service request order based on its booking type, used for analyzing order characteristics and identifying trends.
+
+      - name: GROUP_ID
+        description: >
+          A unique identifier for the group associated with the service request order, used for analyzing group-level order activity.
+
+      - name: RES_ID
+        description: >
+          A unique identifier for the resource associated with the service request order, used for analyzing resource-level order activity.
+
+      - name: AM_REQ_TYPE
+        description: >
+          A categorization of the service request order based on its request type, used for analyzing order characteristics and identifying trends.
+
+      - name: AGENCY_ID
+        description: >
+          A unique identifier for the agency associated with the service request order, used for analyzing agency-level order activity.
+
+      - name: CLIENT_ID
+        description: >
+          A unique identifier for the client associated with the service request order, used for analyzing client-level order activity.
+
+      - name: AM_PLACE_CODE
+        description: >
+          A coded value representing the location associated with the service request order, used for analyzing order characteristics and identifying trends.
+
+      - name: AGENT_ID
+        description: >
+          A unique identifier for the agent associated with the service request order, used for analyzing agent-level order activity.
+
+      - name: DELIVERY_TIME
+        description: >
+          The date and time by which the service request order is expected to be delivered, used for tracking order timelines and analyzing order performance.
+
+      - name: DISPATCHED_DATE
+        description: >
+          The date on which the service request order was dispatched, used for tracking order progress and identifying bottlenecks.
+
+      - name: DISPATCHED_OK
+        description: >
+          A flag indicating whether the service request order was dispatched successfully or not, used for analyzing order performance and identifying issues.
+
+      - name: COMMENTS
+        description: >
+          A free-text field providing additional context about the service request order, used for analyzing order characteristics and identifying trends.
+
+      - name: TERMINATION_COMPLETED
+        description: >
+          A flag indicating whether the service request order has been terminated or not, used for analyzing order status and identifying completed orders.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the service request order has been deleted in the source system or not, used for tracking data provenance and identifying deleted records.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp at which the service request order data was last updated, used for tracking data freshness and identifying changes to the data.

@@ -1,0 +1,122 @@
+models:
+  - name: agency_address
+    description: >
+      The agency_address model represents a standardized view of agency addresses across multiple systems. 
+      Data from different systems may differ due to variations in data entry, formatting, or update frequencies. 
+      This model is used downstream to provide a unified view of agency addresses, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing address distributions, tracking changes to agency addresses over time, and identifying data discrepancies between systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - AGENCY_ADDR_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: AGENCY_ADDRESS_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of AGENCY_ADDR_ID and DATA_SOURCE. 
+          This key ensures row uniqueness and facilitates efficient data retrieval and manipulation.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the agency address data originates. 
+          This column is used to track data provenance and identify potential discrepancies between systems.
+
+      - name: AGENCY_ID
+        description: >
+          The identifier of the agency associated with the address. 
+          This column is used to link agency addresses to their corresponding agency records.
+
+      - name: SEQ_NUMBER
+        description: >
+          A sequence number assigned to the agency address. 
+          This column is used to track the order of address updates or changes.
+
+      - name: ADDRESS_TYPE
+        description: >
+          The type of address (e.g., mailing, shipping, etc.). 
+          This column is used to categorize addresses and apply relevant business rules.
+
+      - name: ADDRESS_LINE1
+        description: >
+          The first line of the agency address. 
+          This column is used to store the primary address information.
+
+      - name: ADDRESS_LINE2
+        description: >
+          The second line of the agency address. 
+          This column is used to store additional address information.
+
+      - name: ADDRESS_CITY
+        description: >
+          The city of the agency address. 
+          This column is used to store the city information.
+
+      - name: STATE_CODE
+        description: >
+          The state code of the agency address. 
+          This column is used to store the state information.
+
+      - name: ZIP
+        description: >
+          The zip code of the agency address. 
+          This column is used to store the zip code information.
+
+      - name: COUNTRY_CODE
+        description: >
+          The country code of the agency address. 
+          This column is used to store the country information.
+
+      - name: IS_ADDRESS_MAILING
+        description: >
+          A flag indicating whether the address is a mailing address. 
+          This column is used to identify addresses that can receive mail.
+
+      - name: IS_ADDRESS_SHIPPING
+        description: >
+          A flag indicating whether the address is a shipping address. 
+          This column is used to identify addresses that can receive shipments.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes about the agency address. 
+          This column is used to store supplementary information.
+
+      - name: AGENCY_ADDR_ID
+        description: >
+          The identifier of the agency address. 
+          This column is used to uniquely identify each agency address and is part of the primary key.
+
+        tests:
+          - not_null
+
+      - name: ADDRESS_LINE3
+        description: >
+          The third line of the agency address. 
+          This column is used to store additional address information.
+
+      - name: ADDRESS_LINE4
+        description: >
+          The fourth line of the agency address. 
+          This column is used to store additional address information.
+
+      - name: ADDRESS_ESSENTIAL
+        description: >
+          A flag indicating whether the address is essential. 
+          This column is used to identify critical addresses.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the agency address was last updated. 
+          This column is used to track changes to the agency address over time.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the agency address has been deleted in the source system. 
+          This column is used to track data deletion and updates.

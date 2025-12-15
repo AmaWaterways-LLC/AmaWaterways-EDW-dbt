@@ -1,0 +1,60 @@
+models:
+  - name: district_type
+    description: >
+      The district_type model represents a standardized view of district types across multiple source systems, including SW1 and SW2. 
+      Data from these systems may differ due to variations in data entry, formatting, or update frequencies. 
+      This model is used downstream to provide a unified understanding of district types, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing district type distributions, tracking changes over time, and identifying data discrepancies between source systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - DISTRICT_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: DISTRICT_TYPE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of DISTRICT_TYPE and DATA_SOURCE, 
+          ensuring row uniqueness and facilitating efficient data retrieval and analysis.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the district type data originates, either SW1 or SW2. 
+          This column is used to track data provenance and identify potential discrepancies between sources.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the district type record within its respective source system. 
+          This column is used to track changes to individual records over time.
+
+      - name: DISTRICT_TYPE
+        description: >
+          The type of district, standardized across source systems. 
+          This column is a key analytical field, enabling analysis of district type distributions and trends.
+
+        tests:
+          - not_null
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the district type, 
+          providing context and supporting analysis of district type data.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the district type record was last updated in its source system. 
+          This column is used to track data freshness and identify potential data latency issues.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the district type record has been deleted in its source system. 
+          This column is used to track data lineage and identify potential data inconsistencies.

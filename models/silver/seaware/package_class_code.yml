@@ -1,0 +1,58 @@
+models:
+  - name: package_class_code
+    description: >
+      The package_class_code model represents a standardized view of package class codes across multiple source systems, including SW1 and SW2. This model is used to provide a unified understanding of package class codes, enabling accurate reporting and analytics. The data from multiple systems may differ due to variations in data entry, formatting, or system-specific nuances. This model is used downstream to support key analytical use cases, such as tracking package class code usage, identifying trends, and auditing data quality.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PACKAGE_CLASS_CODE
+            - PACKAGE_CLASS_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: PACKAGE_CLASS_CODE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of PACKAGE_CLASS_CODE, PACKAGE_CLASS_TYPE, and DATA_SOURCE. This key ensures row uniqueness and facilitates efficient data retrieval.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the package class code data originates, either SW1 or SW2. This column is used to track data provenance and identify potential discrepancies between source systems.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the package class code record within the source system. This column is used to track changes to individual records over time.
+
+      - name: PACKAGE_CLASS_TYPE
+        description: >
+          The type of package class code, which provides additional context for the code's usage and application. This column is used to support reporting and analytics.
+
+        tests:
+          - not_null
+
+      - name: PACKAGE_CLASS_CODE
+        description: >
+          The actual package class code, which is used to classify and track packages. This column is a key component of the surrogate key and is used to support reporting and analytics.
+
+        tests:
+          - not_null
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the package class code. This column provides supplementary information that may be useful for auditing or troubleshooting purposes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the package class code record was last updated in the source system. This column is used to track changes to individual records over time.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the package class code record has been deleted in the source system. This column is used to track data provenance and identify potential discrepancies between source systems.

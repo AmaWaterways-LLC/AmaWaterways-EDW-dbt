@@ -1,0 +1,110 @@
+models:
+  - name: user_login
+    description: >
+      The user_login model represents a standardized view of user login data from multiple systems, SW1 and SW2. 
+      Data from these systems may differ due to differences in data collection, processing, and storage. 
+      This model is used downstream to provide a unified view of user login data for reporting, analytics, and auditability. 
+      Key analytical use cases include tracking user activity, monitoring login trends, and identifying security risks.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - USER_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: USER_LOGIN_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of USER_ID and DATA_SOURCE. 
+          This key ensures row uniqueness and facilitates data integration and analysis.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the user login data originates, either SW1 or SW2. 
+          This column is used to track data provenance and manage data integration.
+
+        tests:
+          - not_null
+
+      - name: USER_ID
+        description: >
+          A unique identifier for the user, used to track user activity and login history. 
+          This column is a primary key in the source systems and ensures row uniqueness in the model.
+
+        tests:
+          - not_null
+
+      - name: USER_LOGIN_NAME
+        description: >
+          The username chosen by the user for login purposes. 
+          This column is used for authentication and authorization.
+
+      - name: USER_PASSWORD
+        description: >
+          The password associated with the user's login credentials. 
+          This column is used for authentication and authorization.
+
+      - name: USER_FIRST_NAME
+        description: >
+          The user's first name, used for identification and personalization.
+
+      - name: USER_MIDDLE_NAME
+        description: >
+          The user's middle name, used for identification and personalization.
+
+      - name: USER_LAST_NAME
+        description: >
+          The user's last name, used for identification and personalization.
+
+      - name: USER_FULL_NAME
+        description: >
+          The user's full name, used for identification and personalization.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes associated with the user's login account.
+
+      - name: OFFICE_CODE
+        description: >
+          A code representing the user's office or location.
+
+      - name: ADMINISTRATIVE_OFFICE
+        description: >
+          The administrative office associated with the user's login account.
+
+      - name: AGENT_ID
+        description: >
+          A unique identifier for the agent associated with the user's login account.
+
+      - name: EMAIL
+        description: >
+          The user's email address, used for communication and notification.
+
+      - name: IS_ACTIVE
+        description: >
+          A flag indicating whether the user's login account is active or inactive.
+
+      - name: USER_POSITION
+        description: >
+          The user's position or role within the organization.
+
+      - name: ENCRYPTED_PASSWORD
+        description: >
+          The encrypted password associated with the user's login credentials.
+
+      - name: EXTERNAL_USER_ID
+        description: >
+          A unique identifier for the user in an external system.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the user's login data was last updated.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the user's login account has been deleted in the source system.

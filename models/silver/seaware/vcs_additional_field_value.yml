@@ -1,0 +1,71 @@
+models:
+  - name: vcs_additional_field_value
+    description: >
+      This model represents additional field values from multiple source systems, 
+      standardized for downstream analytics and reporting. The data may differ 
+      between systems due to varying update frequencies or data entry practices. 
+      This model is used to provide a unified view of additional field values, 
+      enabling key analytical use cases such as data quality reporting, 
+      field usage metrics, and auditability.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ID
+            - DATA_SOURCE
+
+    columns:
+      - name: VCS_ADDITIONAL_FIELD_VALUE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of ID and DATA_SOURCE, 
+          used to uniquely identify each additional field value.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the additional field value originated, 
+          either 'SW1' or 'SW2'.
+
+      - name: ID
+        description: >
+          The unique identifier for the additional field value within its source system. 
+          This column, in combination with DATA_SOURCE, forms the primary key.
+
+        tests:
+          - not_null
+
+      - name: ROW_TYPE
+        description: >
+          The type of row, indicating the context in which the additional field value is used.
+
+      - name: FIELD_NAME
+        description: >
+          The name of the field for which the additional field value is provided.
+
+      - name: RECORD_ID
+        description: >
+          The identifier of the record to which the additional field value belongs.
+
+      - name: NUMBER_VALUE
+        description: >
+          The numeric value of the additional field, if applicable.
+
+      - name: DATE_VALUE
+        description: >
+          The date value of the additional field, if applicable.
+
+      - name: STR_VALUE
+        description: >
+          The string value of the additional field, if applicable.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the additional field value was last updated in its source system.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the additional field value has been deleted in its source system.

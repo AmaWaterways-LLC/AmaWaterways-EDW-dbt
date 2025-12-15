@@ -1,0 +1,75 @@
+models:
+  - name: region_district_link
+    description: >
+      The region_district_link model represents the relationship between regions and districts in the enterprise domain.
+      Data from multiple systems (SW1 and SW2) may differ due to differences in data sources, update frequencies, or data processing rules.
+      This standardized model is used downstream to provide a unified view of region-district relationships, enabling accurate reporting, metrics, and auditability.
+      Key analytical use cases include analyzing region-district assignments, tracking changes over time, and identifying data discrepancies between systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORD_ID
+            - DATA_SOURCE
+
+    columns:
+      - name: REGION_DISTRICT_LINK_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns.
+          This key ensures row uniqueness and facilitates data integration and analysis.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system of the data (either SW1 or SW2).
+          This column allows for data lineage and source system analysis.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the region-district link record.
+          This column, combined with DATA_SOURCE, forms the primary key of the model.
+
+        tests:
+          - not_null
+
+      - name: REGION_ID
+        description: >
+          The identifier of the region associated with the district.
+          This column enables analysis of region-district relationships and assignments.
+
+      - name: DISTRICT_ID
+        description: >
+          The identifier of the district associated with the region.
+          This column enables analysis of district-region relationships and assignments.
+
+      - name: DATE_FROM
+        description: >
+          The start date of the region-district link.
+          This column allows for analysis of link duration and changes over time.
+
+      - name: DATE_TO
+        description: >
+          The end date of the region-district link.
+          This column allows for analysis of link duration and changes over time.
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the region-district link.
+          This column provides context and supplementary information for analysis.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp of the last update to the region-district link record.
+          This column enables analysis of data freshness and update frequency.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the record has been deleted in the source system.
+          This column allows for analysis of data deletion and data quality.

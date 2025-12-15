@@ -1,0 +1,67 @@
+models:
+  - name: group_type
+    description: >
+      The group_type model represents a standardized view of group types across multiple systems, 
+      including SW1 and SW2. This model is used to consolidate and harmonize data from these systems, 
+      providing a single source of truth for analytics and reporting. The data from multiple systems 
+      may differ due to variations in data formatting and collection methods. This model is used 
+      downstream to support key analytical use cases, such as reporting on group type distributions 
+      and analyzing the effectiveness of incentive programs.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - GROUP_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: GROUP_TYPE_SURROGATE_KEY
+        description: >
+          A unique surrogate key generated from the combination of GROUP_TYPE and DATA_SOURCE. 
+          This key is used to uniquely identify each group type record.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the group type data was extracted. This column is used to 
+          track the origin of the data and support data quality analysis.
+
+        tests:
+          - not_null
+
+      - name: RECORD_ID
+        description: >
+          A unique identifier for the group type record within the source system. This column is 
+          used to support data lineage and auditing.
+
+      - name: GROUP_TYPE
+        description: >
+          The type of group, such as a sales team or marketing group. This column is used to 
+          categorize and analyze group performance.
+
+        tests:
+          - not_null
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes about the group type. This column is used to capture 
+          contextual information about the group.
+
+      - name: IS_INCENTIVE
+        description: >
+          A flag indicating whether the group type is eligible for incentives. This column is used 
+          to support analysis of incentive program effectiveness.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the group type record was last updated in the source system. This 
+          column is used to track data freshness and support incremental data loading.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the group type record has been deleted in the source system. 
+          This column is used to support data lineage and auditing.

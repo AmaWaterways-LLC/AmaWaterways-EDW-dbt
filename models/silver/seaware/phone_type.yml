@@ -1,0 +1,59 @@
+models:
+  - name: phone_type
+    description: >
+      The phone_type model represents a standardized view of phone types across multiple source systems, including SW1 and SW2. 
+      Data from these systems may differ due to variations in data entry, formatting, or update frequencies. 
+      This model is used downstream to provide a unified understanding of phone types, enabling accurate reporting, metrics, and auditability. 
+      Key analytical use cases include analyzing phone type distributions, tracking changes over time, and identifying data discrepancies between source systems.
+
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PHONE_TYPE
+            - DATA_SOURCE
+
+    columns:
+      - name: PHONE_TYPE_SURROGATE_KEY
+        description: >
+          A unique identifier for each phone type and data source combination, generated using the dbt_utils.generate_surrogate_key macro. 
+          This column ensures row uniqueness and facilitates efficient data joining and analysis.
+
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the phone type data originates, either SW1 or SW2. 
+          This column is used to track data provenance and identify potential discrepancies between source systems.
+
+        tests:
+          - not_null
+
+      - name: PHONE_TYPE
+        description: >
+          The type of phone, standardized across source systems using the transform_string macro. 
+          This column represents the primary business attribute of the model and is used in various analytical contexts.
+
+        tests:
+          - not_null
+
+      - name: COMMENTS
+        description: >
+          Additional comments or notes related to the phone type, standardized across source systems using the transform_string macro. 
+          This column provides supplementary context for analytical and reporting purposes.
+
+      - name: PHONE_TYPE_ID
+        description: >
+          A numeric identifier for the phone type, standardized across source systems using the transform_numeric macro. 
+          This column is used for data integration and referencing purposes.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp when the phone type data was last updated, standardized across source systems using the transform_datetime macro. 
+          This column is used to track data freshness and identify potential data latency issues.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the phone type data has been deleted in the source system, used for data synchronization and auditing purposes.
