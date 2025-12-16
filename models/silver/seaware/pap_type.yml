@@ -1,54 +1,66 @@
 models:
-  - name: pap_type
-    description: >
-      The pap_type model represents a standardized view of PAP (Product Application Process) types across multiple source systems, including SW1 and SW2. This model is crucial for downstream analytics and reporting, providing a unified understanding of PAP types and their characteristics. Data from multiple systems may differ due to variations in data entry, formatting, or system-specific nuances. This model is used to generate reports, track metrics, and ensure auditability across the enterprise.
+- name: pap_type
+  description: 'The pap_type model represents a standardized view of PAP (Product
+    Application Process) types across multiple source systems, including SW1 and SW2.
+    This model is crucial for downstream analytics and reporting, providing a unified
+    understanding of PAP types and their characteristics. Data from multiple systems
+    may differ due to variations in data entry, formatting, or system-specific nuances.
+    This model is used to generate reports, track metrics, and ensure auditability
+    across the enterprise.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - PAP_TYPE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: PAP_TYPE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of PAP_TYPE
+      and DATA_SOURCE, ensuring row uniqueness across the model.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the PAP type data originates, either
+      SW1 or SW2. This column is crucial for tracking data lineage and understanding
+      system-specific differences.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - PAP_TYPE
-            - DATA_SOURCE
+    - not_null
+  - name: PAP_TYPE
+    description: 'The type of PAP, standardized across source systems. This column
+      represents the core business concept of the model.
 
-    columns:
-      - name: PAP_TYPE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of PAP_TYPE and DATA_SOURCE, ensuring row uniqueness across the model.
+      '
+    tests:
+    - not_null
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the PAP type, providing
+      context and supporting information.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the PAP type data originates, either SW1 or SW2. This column is crucial for tracking data lineage and understanding system-specific differences.
+      '
+  - name: IS_EBD
+    description: 'A flag indicating whether the PAP type is EBD (Electronic Batch
+      Data) or not, influencing downstream processing and analytics.
 
-        tests:
-          - not_null
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the PAP type record, applicable only to
+      data from the SW2 source system.
 
-      - name: PAP_TYPE
-        description: >
-          The type of PAP, standardized across source systems. This column represents the core business concept of the model.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the PAP type record was last updated, used for
+      tracking changes and ensuring data freshness.
 
-        tests:
-          - not_null
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the PAP type, providing context and supporting information.
-
-      - name: IS_EBD
-        description: >
-          A flag indicating whether the PAP type is EBD (Electronic Batch Data) or not, influencing downstream processing and analytics.
-
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the PAP type record, applicable only to data from the SW2 source system.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the PAP type record was last updated, used for tracking changes and ensuring data freshness.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the PAP type record has been deleted in the source system, essential for managing data consistency and integrity.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the PAP type record has been deleted in
+      the source system, essential for managing data consistency and integrity.

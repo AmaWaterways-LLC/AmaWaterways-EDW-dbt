@@ -1,86 +1,90 @@
 models:
-  - name: group_promotion
-    description: >
-      This model represents group promotions in the enterprise domain, combining data from multiple systems (SW1 and SW2). 
-      The data from these systems may differ due to variations in data collection, processing, or timing. 
-      This standardized model is used downstream for reporting, analytics, and auditability, providing a unified view of group promotions. 
-      Key analytical use cases include tracking promotion codes, requested counts, and unassigned quantities.
+- name: group_promotion
+  description: 'This model represents group promotions in the enterprise domain, combining
+    data from multiple systems (SW1 and SW2).  The data from these systems may differ
+    due to variations in data collection, processing, or timing.  This standardized
+    model is used downstream for reporting, analytics, and auditability, providing
+    a unified view of group promotions.  Key analytical use cases include tracking
+    promotion codes, requested counts, and unassigned quantities.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - GROUP_PROMOTION_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: GROUP_PROMOTION_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of GROUP_PROMOTION_ID
+      and DATA_SOURCE.  This key ensures row uniqueness and facilitates data integration.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the group promotion data, either SW1 or SW2.  This
+      column is used to track data origin and manage data integration.
+
+      '
+  - name: GROUP_PROMOTION_ID
+    description: 'A unique identifier for the group promotion, used in combination
+      with DATA_SOURCE to ensure row uniqueness.  This column is crucial for data
+      integration and analytics.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - GROUP_PROMOTION_ID
-            - DATA_SOURCE
+    - not_null
+  - name: GROUP_ID
+    description: 'The identifier of the group associated with the promotion.  This
+      column is used to analyze promotion effectiveness and group behavior.
 
-    columns:
-      - name: GROUP_PROMOTION_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of GROUP_PROMOTION_ID and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates data integration.
+      '
+  - name: GROUP_SHIP_REQ_ID
+    description: 'The identifier of the group ship request associated with the promotion.  This
+      column is used to track shipping and fulfillment processes.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the group promotion data, either SW1 or SW2. 
-          This column is used to track data origin and manage data integration.
+      '
+  - name: PROMO_CODE
+    description: 'The promotional code used for the group promotion.  This column
+      is used to analyze promotion effectiveness and customer engagement.
 
-      - name: GROUP_PROMOTION_ID
-        description: >
-          A unique identifier for the group promotion, used in combination with DATA_SOURCE to ensure row uniqueness. 
-          This column is crucial for data integration and analytics.
-        tests:
-          - not_null
+      '
+  - name: GUEST_MASK
+    description: 'A mask applied to guest data for the group promotion.  This column
+      is used to manage data privacy and security.
 
-      - name: GROUP_ID
-        description: >
-          The identifier of the group associated with the promotion. 
-          This column is used to analyze promotion effectiveness and group behavior.
+      '
+  - name: REQUESTED_COUNT
+    description: 'The number of requests made for the group promotion.  This column
+      is used to analyze demand and promotion effectiveness.
 
-      - name: GROUP_SHIP_REQ_ID
-        description: >
-          The identifier of the group ship request associated with the promotion. 
-          This column is used to track shipping and fulfillment processes.
+      '
+  - name: UNASSIGNED_QTY
+    description: 'The quantity of unassigned items for the group promotion.  This
+      column is used to track inventory and fulfillment processes.
 
-      - name: PROMO_CODE
-        description: >
-          The promotional code used for the group promotion. 
-          This column is used to analyze promotion effectiveness and customer engagement.
+      '
+  - name: GRP_REQUESTS
+    description: 'The requests made for the group promotion, applicable only to SW2
+      data.  This column is used to analyze customer engagement and promotion effectiveness.
 
-      - name: GUEST_MASK
-        description: >
-          A mask applied to guest data for the group promotion. 
-          This column is used to manage data privacy and security.
+      '
+  - name: IS_FORCED
+    description: 'A flag indicating whether the group promotion was forced, applicable
+      only to SW2 data.  This column is used to analyze promotion effectiveness and
+      customer behavior.
 
-      - name: REQUESTED_COUNT
-        description: >
-          The number of requests made for the group promotion. 
-          This column is used to analyze demand and promotion effectiveness.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update made to the group promotion data.  This
+      column is used to track data freshness and manage data integration.
 
-      - name: UNASSIGNED_QTY
-        description: >
-          The quantity of unassigned items for the group promotion. 
-          This column is used to track inventory and fulfillment processes.
-
-      - name: GRP_REQUESTS
-        description: >
-          The requests made for the group promotion, applicable only to SW2 data. 
-          This column is used to analyze customer engagement and promotion effectiveness.
-
-      - name: IS_FORCED
-        description: >
-          A flag indicating whether the group promotion was forced, applicable only to SW2 data. 
-          This column is used to analyze promotion effectiveness and customer behavior.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update made to the group promotion data. 
-          This column is used to track data freshness and manage data integration.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the group promotion data was deleted in the source system. 
-          This column is used to manage data integration and data quality.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the group promotion data was deleted in
+      the source system.  This column is used to manage data integration and data
+      quality.

@@ -1,57 +1,64 @@
 models:
-  - name: pap_external
-    description: >
-      The pap_external model represents a unified view of external PAP data from multiple source systems, SW1 and SW2. 
-      Data from these systems may differ due to differences in data collection, processing, or timing. 
-      This standardized model is used downstream for reporting, analytics, and auditing purposes, providing a single source of truth for PAP external data. 
-      Key analytical use cases include tracking changes in PAP codes, monitoring data freshness, and identifying discrepancies between source systems.
+- name: pap_external
+  description: 'The pap_external model represents a unified view of external PAP data
+    from multiple source systems, SW1 and SW2.  Data from these systems may differ
+    due to differences in data collection, processing, or timing.  This standardized
+    model is used downstream for reporting, analytics, and auditing purposes, providing
+    a single source of truth for PAP external data.  Key analytical use cases include
+    tracking changes in PAP codes, monitoring data freshness, and identifying discrepancies
+    between source systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - PAP_EXTERNAL_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: PAP_EXTERNAL_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of PAP_EXTERNAL_ID
+      and DATA_SOURCE.  This key ensures row uniqueness across multiple source systems.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the PAP external data originates, either
+      SW1 or SW2.  This column is used to track data provenance and identify potential
+      discrepancies between sources.
+
+      '
+  - name: PAP_EXTERNAL_ID
+    description: 'A unique identifier for the PAP external data, used in conjunction
+      with DATA_SOURCE to ensure row uniqueness.  This column is critical for tracking
+      changes in PAP codes and monitoring data freshness.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - PAP_EXTERNAL_ID
-            - DATA_SOURCE
+    - not_null
+  - name: EXTERNAL_NAMES_ID
+    description: 'A foreign key referencing the external names table, used to link
+      PAP external data to corresponding names.  This column is essential for analytics
+      and reporting purposes.
 
-    columns:
-      - name: PAP_EXTERNAL_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of PAP_EXTERNAL_ID and DATA_SOURCE. 
-          This key ensures row uniqueness across multiple source systems.
+      '
+  - name: PAP_CODE
+    description: 'A standardized code representing the PAP external data, used for
+      tracking changes and monitoring data quality.  This column is critical for auditing
+      and compliance purposes.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the PAP external data originates, either SW1 or SW2. 
-          This column is used to track data provenance and identify potential discrepancies between sources.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'A timestamp indicating when the PAP external data was last updated,
+      used to track data freshness and monitor changes.  This column is essential
+      for analytics and reporting purposes.
 
-      - name: PAP_EXTERNAL_ID
-        description: >
-          A unique identifier for the PAP external data, used in conjunction with DATA_SOURCE to ensure row uniqueness. 
-          This column is critical for tracking changes in PAP codes and monitoring data freshness.
-
-        tests:
-          - not_null
-
-      - name: EXTERNAL_NAMES_ID
-        description: >
-          A foreign key referencing the external names table, used to link PAP external data to corresponding names. 
-          This column is essential for analytics and reporting purposes.
-
-      - name: PAP_CODE
-        description: >
-          A standardized code representing the PAP external data, used for tracking changes and monitoring data quality. 
-          This column is critical for auditing and compliance purposes.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          A timestamp indicating when the PAP external data was last updated, used to track data freshness and monitor changes. 
-          This column is essential for analytics and reporting purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the PAP external data has been deleted in the source system, used to track data provenance and identify potential discrepancies. 
-          This column is critical for auditing and compliance purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the PAP external data has been deleted
+      in the source system, used to track data provenance and identify potential discrepancies.  This
+      column is critical for auditing and compliance purposes.

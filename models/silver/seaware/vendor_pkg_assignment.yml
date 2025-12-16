@@ -1,95 +1,103 @@
 models:
-  - name: vendor_pkg_assignment
-    description: >
-      This model represents the standardized vendor package assignment data from multiple source systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data collection, processing, or timing. 
-      This model is used downstream to provide a unified view of vendor package assignments, enabling accurate reporting, metrics, and auditability. 
-      Key analytical use cases include tracking vendor performance, package utilization, and service delivery metrics.
+- name: vendor_pkg_assignment
+  description: 'This model represents the standardized vendor package assignment data
+    from multiple source systems, SW1 and SW2.  The data from these systems may differ
+    due to differences in data collection, processing, or timing.  This model is used
+    downstream to provide a unified view of vendor package assignments, enabling accurate
+    reporting, metrics, and auditability.  Key analytical use cases include tracking
+    vendor performance, package utilization, and service delivery metrics.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: VENDOR_PKG_ASSIGNMENT_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns, ensuring row uniqueness across source systems.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: DATA_SOURCE
+    description: 'The source system identifier, either SW1 or SW2, indicating the
+      origin of the data.
 
-    columns:
-      - name: VENDOR_PKG_ASSIGNMENT_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns, ensuring row uniqueness across source systems.
-        tests:
-          - not_null
+      '
+  - name: RECORD_ID
+    description: 'The unique identifier for the vendor package assignment record,
+      used in combination with DATA_SOURCE to ensure row uniqueness.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system identifier, either SW1 or SW2, indicating the origin of the data.
+      '
+    tests:
+    - not_null
+  - name: VENDOR_ID
+    description: 'The identifier for the vendor associated with the package assignment.
 
-      - name: RECORD_ID
-        description: >
-          The unique identifier for the vendor package assignment record, used in combination with DATA_SOURCE to ensure row uniqueness.
-        tests:
-          - not_null
+      '
+  - name: PACKAGE_ID
+    description: 'The identifier for the package being assigned.
 
-      - name: VENDOR_ID
-        description: >
-          The identifier for the vendor associated with the package assignment.
+      '
+  - name: SERVICE_DATE
+    description: 'The date of service for the package assignment.
 
-      - name: PACKAGE_ID
-        description: >
-          The identifier for the package being assigned.
+      '
+  - name: LOCATION_TYPE_FROM
+    description: 'The type of location where the package assignment originated.
 
-      - name: SERVICE_DATE
-        description: >
-          The date of service for the package assignment.
+      '
+  - name: LOCATION_CODE_FROM
+    description: 'The code for the location where the package assignment originated.
 
-      - name: LOCATION_TYPE_FROM
-        description: >
-          The type of location where the package assignment originated.
+      '
+  - name: LOCATION_TYPE_TO
+    description: 'The type of location where the package assignment is destined.
 
-      - name: LOCATION_CODE_FROM
-        description: >
-          The code for the location where the package assignment originated.
+      '
+  - name: LOCATION_CODE_TO
+    description: 'The code for the location where the package assignment is destined.
 
-      - name: LOCATION_TYPE_TO
-        description: >
-          The type of location where the package assignment is destined.
+      '
+  - name: COMPONENT_TYPE
+    description: 'The type of component associated with the package assignment.
 
-      - name: LOCATION_CODE_TO
-        description: >
-          The code for the location where the package assignment is destined.
+      '
+  - name: COMPONENT_CODE
+    description: 'The code for the component associated with the package assignment.
 
-      - name: COMPONENT_TYPE
-        description: >
-          The type of component associated with the package assignment.
+      '
+  - name: COMPONENT_SUBCODE1
+    description: 'The first subcode for the component associated with the package
+      assignment.
 
-      - name: COMPONENT_CODE
-        description: >
-          The code for the component associated with the package assignment.
+      '
+  - name: COMPONENT_SUBCODE2
+    description: 'The second subcode for the component associated with the package
+      assignment.
 
-      - name: COMPONENT_SUBCODE1
-        description: >
-          The first subcode for the component associated with the package assignment.
+      '
+  - name: COMPONENT_SUBCODE3
+    description: 'The third subcode for the component associated with the package
+      assignment.
 
-      - name: COMPONENT_SUBCODE2
-        description: >
-          The second subcode for the component associated with the package assignment.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the package assignment.
 
-      - name: COMPONENT_SUBCODE3
-        description: >
-          The third subcode for the component associated with the package assignment.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the package assignment record was last updated.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the package assignment.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the package assignment record was last updated.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the package assignment record has been deleted in the source system.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the package assignment record has been
+      deleted in the source system.

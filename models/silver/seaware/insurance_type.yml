@@ -1,59 +1,60 @@
 models:
-  - name: insurance_type
-    description: >
-      The insurance_type model represents a standardized view of insurance types across multiple source systems, 
-      including SW1 and SW2. This model is used to consolidate and harmonize insurance type data, 
-      enabling accurate reporting, analytics, and auditability. 
-      Data from multiple systems may differ due to variations in data formatting, 
-      collection methods, or update frequencies. 
-      This model is used downstream to support business intelligence, data science, and regulatory compliance.
+- name: insurance_type
+  description: 'The insurance_type model represents a standardized view of insurance
+    types across multiple source systems,  including SW1 and SW2. This model is used
+    to consolidate and harmonize insurance type data,  enabling accurate reporting,
+    analytics, and auditability.  Data from multiple systems may differ due to variations
+    in data formatting,  collection methods, or update frequencies.  This model is
+    used downstream to support business intelligence, data science, and regulatory
+    compliance.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - INSURANCE_TYPE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INSURANCE_TYPE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of INSURANCE_TYPE
+      and DATA_SOURCE,  used to uniquely identify each insurance type record.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the insurance type data originated,  either
+      SW1 or SW2. This column is used to track data lineage and  enable data quality
+      analysis.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - INSURANCE_TYPE
-            - DATA_SOURCE
+    - not_null
+  - name: RECORD_ID
+    description: 'A unique identifier for the insurance type record within the source
+      system.
 
-    columns:
-      - name: INSURANCE_TYPE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of INSURANCE_TYPE and DATA_SOURCE, 
-          used to uniquely identify each insurance type record.
+      '
+  - name: INSURANCE_TYPE
+    description: 'The type of insurance, such as health, life, or property insurance.  This
+      column is used to categorize and analyze insurance data.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the insurance type data originated, 
-          either SW1 or SW2. This column is used to track data lineage and 
-          enable data quality analysis.
+      '
+    tests:
+    - not_null
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the insurance type.
 
-        tests:
-          - not_null
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the insurance type record was last updated in
+      the source system.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the insurance type record within the source system.
-
-      - name: INSURANCE_TYPE
-        description: >
-          The type of insurance, such as health, life, or property insurance. 
-          This column is used to categorize and analyze insurance data.
-
-        tests:
-          - not_null
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the insurance type.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the insurance type record was last updated in the source system.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the insurance type record has been deleted in the source system.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the insurance type record has been deleted
+      in the source system.

@@ -1,83 +1,79 @@
 models:
-  - name: sp_req_code
-    description: >
-      The sp_req_code model represents standardized service provider request codes 
-      from multiple systems, including SW1 and SW2. Data from these systems may 
-      differ due to varying data entry practices or system-specific nuances. This 
-      model is used downstream to provide a unified view of service provider 
-      request codes, enabling accurate reporting, metrics, and auditability. Key 
-      analytical use cases include analyzing request code usage, tracking changes 
-      to request codes over time, and identifying discrepancies between systems.
+- name: sp_req_code
+  description: 'The sp_req_code model represents standardized service provider request
+    codes  from multiple systems, including SW1 and SW2. Data from these systems may  differ
+    due to varying data entry practices or system-specific nuances. This  model is
+    used downstream to provide a unified view of service provider  request codes,
+    enabling accurate reporting, metrics, and auditability. Key  analytical use cases
+    include analyzing request code usage, tracking changes  to request codes over
+    time, and identifying discrepancies between systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - SP_REQ_CODE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: SP_REQ_CODE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of SP_REQ_CODE  and
+      DATA_SOURCE, ensuring row uniqueness across multiple systems.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the service provider request code data  originates,
+      such as SW1 or SW2.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - SP_REQ_CODE
-            - DATA_SOURCE
+    - not_null
+  - name: SP_REQ_CODE
+    description: 'The standardized service provider request code, transformed to ensure  consistency
+      across systems.
 
-    columns:
-      - name: SP_REQ_CODE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of SP_REQ_CODE 
-          and DATA_SOURCE, ensuring row uniqueness across multiple systems.
+      '
+    tests:
+    - not_null
+  - name: REQ_CODE_ID
+    description: 'A unique identifier for the request code, used for referencing and  analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the service provider request code data 
-          originates, such as SW1 or SW2.
+      '
+  - name: SP_REQ_TYPE
+    description: 'The type of service provider request, categorizing the request code  for
+      reporting and analysis.
 
-        tests:
-          - not_null
+      '
+  - name: PROVIDER_CODE
+    description: 'The code associated with the service provider, used for tracking
+      and  analysis.
 
-      - name: SP_REQ_CODE
-        description: >
-          The standardized service provider request code, transformed to ensure 
-          consistency across systems.
+      '
+  - name: SP_REQ_NAME
+    description: 'The name of the service provider request, providing a human-readable  description
+      of the request code.
 
-        tests:
-          - not_null
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the service provider request  code,
+      providing context and clarification.
 
-      - name: REQ_CODE_ID
-        description: >
-          A unique identifier for the request code, used for referencing and 
-          analysis.
+      '
+  - name: WDW_CODED_REMARK
+    description: 'A coded remark related to the service provider request code, used
+      for  tracking and analysis.
 
-      - name: SP_REQ_TYPE
-        description: >
-          The type of service provider request, categorizing the request code 
-          for reporting and analysis.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the record has been deleted in the source  system,
+      used for data synchronization and auditing.
 
-      - name: PROVIDER_CODE
-        description: >
-          The code associated with the service provider, used for tracking and 
-          analysis.
-
-      - name: SP_REQ_NAME
-        description: >
-          The name of the service provider request, providing a human-readable 
-          description of the request code.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the service provider request 
-          code, providing context and clarification.
-
-      - name: WDW_CODED_REMARK
-        description: >
-          A coded remark related to the service provider request code, used for 
-          tracking and analysis.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the record has been deleted in the source 
-          system, used for data synchronization and auditing.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the record, used for data 
-          synchronization and auditing.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp of the last update to the record, used for data  synchronization
+      and auditing.

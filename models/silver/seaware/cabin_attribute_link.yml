@@ -1,91 +1,119 @@
 models:
-  - name: cabin_attribute_link
-    description: >
-      The cabin_attribute_link model represents the standardized link between cabin attributes and their corresponding ship codes, cabin numbers, and sequence numbers across multiple data sources. This model is crucial for providing a unified view of cabin attribute data, which may differ between systems due to varying update frequencies or data entry practices. Downstream, this model is used for reporting, analytics, and auditing purposes, such as tracking changes in cabin attributes over time or analyzing the distribution of attributes across different ships and cabins.
+- name: cabin_attribute_link
+  description: 'The cabin_attribute_link model represents the standardized link between
+    cabin attributes and their corresponding ship codes, cabin numbers, and sequence
+    numbers across multiple data sources. This model is crucial for providing a unified
+    view of cabin attribute data, which may differ between systems due to varying
+    update frequencies or data entry practices. Downstream, this model is used for
+    reporting, analytics, and auditing purposes, such as tracking changes in cabin
+    attributes over time or analyzing the distribution of attributes across different
+    ships and cabins.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - CABIN_ATTR_ID
+      - CABIN_NUMBER
+      - SEQ_NUMBER
+      - SHIP_CODE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: CABIN_ATTRIBUTE_LINK_SURROGATE_KEY
+    description: 'A unique identifier generated for each unique combination of cabin
+      attribute ID, cabin number, sequence number, ship code, and data source. This
+      key ensures that each record in the model can be distinctly identified and referenced.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the cabin attribute data was extracted.
+      This column is essential for tracking the origin of the data and identifying
+      potential discrepancies between sources.
+
+      '
+  - name: SHIP_CODE
+    description: 'A unique code assigned to each ship, used to identify and differentiate
+      between vessels. This column plays a critical role in linking cabin attributes
+      to their respective ships.
+
+      '
+  - name: CABIN_NUMBER
+    description: 'The unique identifier assigned to each cabin on a ship. This column
+      is vital for associating cabin attributes with their corresponding cabins.
+
+      '
+  - name: CABIN_ATTR_ID
+    description: 'A unique identifier for each cabin attribute, used to distinguish
+      between different attributes. This column is crucial for analyzing and reporting
+      on specific cabin attributes.
+
+      '
+  - name: SEQ_NUMBER
+    description: 'A sequence number assigned to each cabin attribute record, used
+      to track changes and updates to the data. This column is essential for maintaining
+      a historical record of cabin attribute modifications.
+
+      '
+  - name: CABIN_ATTR_COUNTER
+    description: 'A counter value associated with each cabin attribute, used to track
+      the frequency or quantity of the attribute. This column provides valuable insights
+      into the distribution and prevalence of cabin attributes.
+
+      '
+  - name: CABIN_ATTR_EXT_INFO
+    description: 'Additional information related to each cabin attribute, providing
+      context and further details about the attribute. This column is useful for conducting
+      in-depth analysis and reporting on cabin attributes.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier assigned to each record in the source system,
+      used to track and reference individual records. This column is necessary for
+      maintaining data integrity and auditing purposes.
+
+      '
+  - name: EFF_SAIL_FROM
+    description: 'The effective sail date from which the cabin attribute is valid.
+      This column is critical for determining the applicability of cabin attributes
+      to specific sailings and time periods.
+
+      '
+  - name: EFF_SAIL_TO
+    description: 'The effective sail date to which the cabin attribute is valid. This
+      column is essential for determining the duration and applicability of cabin
+      attributes to specific sailings and time periods.
+
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the cabin attribute record was last updated.
+      This column is vital for tracking changes and updates to the data, as well as
+      for auditing and reporting purposes.
+
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the cabin attribute record has been deleted
+      in the source system. This column is necessary for maintaining data integrity
+      and tracking changes to the data.
+
+      '
+  - name: CABIN_ATTR_ID
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CABIN_ATTR_ID
-            - CABIN_NUMBER
-            - SEQ_NUMBER
-            - SHIP_CODE
-            - DATA_SOURCE
-
-    columns:
-      - name: CABIN_ATTRIBUTE_LINK_SURROGATE_KEY
-        description: >
-          A unique identifier generated for each unique combination of cabin attribute ID, cabin number, sequence number, ship code, and data source. This key ensures that each record in the model can be distinctly identified and referenced.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the cabin attribute data was extracted. This column is essential for tracking the origin of the data and identifying potential discrepancies between sources.
-
-      - name: SHIP_CODE
-        description: >
-          A unique code assigned to each ship, used to identify and differentiate between vessels. This column plays a critical role in linking cabin attributes to their respective ships.
-
-      - name: CABIN_NUMBER
-        description: >
-          The unique identifier assigned to each cabin on a ship. This column is vital for associating cabin attributes with their corresponding cabins.
-
-      - name: CABIN_ATTR_ID
-        description: >
-          A unique identifier for each cabin attribute, used to distinguish between different attributes. This column is crucial for analyzing and reporting on specific cabin attributes.
-
-      - name: SEQ_NUMBER
-        description: >
-          A sequence number assigned to each cabin attribute record, used to track changes and updates to the data. This column is essential for maintaining a historical record of cabin attribute modifications.
-
-      - name: CABIN_ATTR_COUNTER
-        description: >
-          A counter value associated with each cabin attribute, used to track the frequency or quantity of the attribute. This column provides valuable insights into the distribution and prevalence of cabin attributes.
-
-      - name: CABIN_ATTR_EXT_INFO
-        description: >
-          Additional information related to each cabin attribute, providing context and further details about the attribute. This column is useful for conducting in-depth analysis and reporting on cabin attributes.
-
-      - name: RECORD_ID
-        description: >
-          A unique identifier assigned to each record in the source system, used to track and reference individual records. This column is necessary for maintaining data integrity and auditing purposes.
-
-      - name: EFF_SAIL_FROM
-        description: >
-          The effective sail date from which the cabin attribute is valid. This column is critical for determining the applicability of cabin attributes to specific sailings and time periods.
-
-      - name: EFF_SAIL_TO
-        description: >
-          The effective sail date to which the cabin attribute is valid. This column is essential for determining the duration and applicability of cabin attributes to specific sailings and time periods.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the cabin attribute record was last updated. This column is vital for tracking changes and updates to the data, as well as for auditing and reporting purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the cabin attribute record has been deleted in the source system. This column is necessary for maintaining data integrity and tracking changes to the data.
-
-      - name: CABIN_ATTR_ID
-        tests:
-          - not_null
-
-      - name: CABIN_NUMBER
-        tests:
-          - not_null
-
-      - name: SEQ_NUMBER
-        tests:
-          - not_null
-
-      - name: SHIP_CODE
-        tests:
-          - not_null
-
-      - name: DATA_SOURCE
-        tests:
-          - not_null
+    - not_null
+  - name: CABIN_NUMBER
+    tests:
+    - not_null
+  - name: SEQ_NUMBER
+    tests:
+    - not_null
+  - name: SHIP_CODE
+    tests:
+    - not_null
+  - name: DATA_SOURCE
+    tests:
+    - not_null

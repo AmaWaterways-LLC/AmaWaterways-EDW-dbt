@@ -1,84 +1,78 @@
 models:
-  - name: res_notes_history
-    description: >
-      This model represents a standardized history of notes related to resources, 
-      consolidated from multiple source systems (SW1 and SW2). Data from these 
-      systems may differ due to variations in data entry practices or system 
-      configurations. This model is used downstream for reporting, metrics, and 
-      auditing purposes, providing a unified view of resource notes across the 
-      enterprise. Key analytical use cases include analyzing note trends over 
-      time, identifying data inconsistencies between source systems, and tracking 
-      changes to notes for auditability.
+- name: res_notes_history
+  description: 'This model represents a standardized history of notes related to resources,  consolidated
+    from multiple source systems (SW1 and SW2). Data from these  systems may differ
+    due to variations in data entry practices or system  configurations. This model
+    is used downstream for reporting, metrics, and  auditing purposes, providing a
+    unified view of resource notes across the  enterprise. Key analytical use cases
+    include analyzing note trends over  time, identifying data inconsistencies between
+    source systems, and tracking  changes to notes for auditability.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: RES_NOTES_HISTORY_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE  columns,
+      used to uniquely identify each note record across source  systems. This key
+      enables efficient joining and analysis of note data.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the note record originated, either
+      SW1 or  SW2. This column is used to track data lineage and identify potential  discrepancies
+      between source systems.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the note record within its source system.
+      This  column, combined with DATA_SOURCE, forms the primary key for this  model.
+      It is used to track changes to individual note records over time.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: RES_ID
+    description: 'The identifier of the resource to which the note is related. This  column
+      is used to join note data with other resource-related data for  analysis and
+      reporting.
 
-    columns:
-      - name: RES_NOTES_HISTORY_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE 
-          columns, used to uniquely identify each note record across source 
-          systems. This key enables efficient joining and analysis of note data.
+      '
+  - name: ADD_TIMESTAMP
+    description: 'The timestamp when the note was added to the source system. This  column
+      is used to analyze note trends over time and track changes to  notes.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the note record originated, either SW1 or 
-          SW2. This column is used to track data lineage and identify potential 
-          discrepancies between source systems.
+      '
+  - name: CHANGE_TIMESTAMP
+    description: 'The timestamp when the note was last changed in the source system.  This
+      column is used to track changes to notes and identify potential  data inconsistencies.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the note record within its source system. This 
-          column, combined with DATA_SOURCE, forms the primary key for this 
-          model. It is used to track changes to individual note records over time.
-        tests:
-          - not_null
+      '
+  - name: OPERATOR_ID
+    description: 'The identifier of the operator who added or changed the note. This  column
+      is used to track data lineage and identify potential data entry  errors.
 
-      - name: RES_ID
-        description: >
-          The identifier of the resource to which the note is related. This 
-          column is used to join note data with other resource-related data for 
-          analysis and reporting.
+      '
+  - name: COMMENTS_LONG
+    description: 'The text of the note. This column is used for reporting and analysis  of
+      note content.
 
-      - name: ADD_TIMESTAMP
-        description: >
-          The timestamp when the note was added to the source system. This 
-          column is used to analyze note trends over time and track changes to 
-          notes.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the note record was last updated in the source  system.
+      This column is used to track changes to notes and identify  potential data inconsistencies.
 
-      - name: CHANGE_TIMESTAMP
-        description: >
-          The timestamp when the note was last changed in the source system. 
-          This column is used to track changes to notes and identify potential 
-          data inconsistencies.
-
-      - name: OPERATOR_ID
-        description: >
-          The identifier of the operator who added or changed the note. This 
-          column is used to track data lineage and identify potential data entry 
-          errors.
-
-      - name: COMMENTS_LONG
-        description: >
-          The text of the note. This column is used for reporting and analysis 
-          of note content.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the note record was last updated in the source 
-          system. This column is used to track changes to notes and identify 
-          potential data inconsistencies.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the note record has been deleted in the 
-          source system. This column is used to track data lineage and identify 
-          potential data inconsistencies.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the note record has been deleted in the  source
+      system. This column is used to track data lineage and identify  potential data
+      inconsistencies.

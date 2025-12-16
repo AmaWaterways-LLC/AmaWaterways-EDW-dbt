@@ -1,62 +1,65 @@
 models:
-  - name: vcs_domain_list_value
-    description: >
-      This model represents a standardized list of domain values from multiple source systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data entry, processing, or timing. 
-      This model is used downstream to provide a unified view of domain values for reporting, metrics, and auditability. 
-      Key analytical use cases include tracking changes in domain values over time and identifying discrepancies between source systems.
+- name: vcs_domain_list_value
+  description: 'This model represents a standardized list of domain values from multiple
+    source systems, SW1 and SW2.  The data from these systems may differ due to differences
+    in data entry, processing, or timing.  This model is used downstream to provide
+    a unified view of domain values for reporting, metrics, and auditability.  Key
+    analytical use cases include tracking changes in domain values over time and identifying
+    discrepancies between source systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: VCS_DOMAIN_LIST_VALUE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns.  This key ensures that each row in the model is uniquely identifiable,
+      even if the RECORD_ID is duplicated across source systems.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the domain value originated, either
+      SW1 or SW2.  This column is used to track the provenance of the data and identify
+      any discrepancies between source systems.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the domain value within the source system.  This
+      column, combined with the DATA_SOURCE column, forms the primary key of the model.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: DOMAIN_CODE
+    description: 'A code representing the domain to which the value belongs.  This
+      column is used to group related domain values together for analysis and reporting.
 
-    columns:
-      - name: VCS_DOMAIN_LIST_VALUE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns. 
-          This key ensures that each row in the model is uniquely identifiable, even if the RECORD_ID is duplicated across source systems.
+      '
+  - name: VALUE
+    description: 'The actual value associated with the domain code.  This column is
+      used to provide the specific value for a given domain code.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the domain value originated, either SW1 or SW2. 
-          This column is used to track the provenance of the data and identify any discrepancies between source systems.
+      '
+  - name: ICON_ID
+    description: 'An identifier for an icon associated with the domain value.  This
+      column is used to provide visual representation of the domain value.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the domain value within the source system. 
-          This column, combined with the DATA_SOURCE column, forms the primary key of the model.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the domain value was last updated in the source
+      system.  This column is used to track changes to the domain value over time.
 
-        tests:
-          - not_null
-
-      - name: DOMAIN_CODE
-        description: >
-          A code representing the domain to which the value belongs. 
-          This column is used to group related domain values together for analysis and reporting.
-
-      - name: VALUE
-        description: >
-          The actual value associated with the domain code. 
-          This column is used to provide the specific value for a given domain code.
-
-      - name: ICON_ID
-        description: >
-          An identifier for an icon associated with the domain value. 
-          This column is used to provide visual representation of the domain value.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the domain value was last updated in the source system. 
-          This column is used to track changes to the domain value over time.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the domain value has been deleted in the source system. 
-          This column is used to track the status of the domain value in the source system.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the domain value has been deleted in the
+      source system.  This column is used to track the status of the domain value
+      in the source system.

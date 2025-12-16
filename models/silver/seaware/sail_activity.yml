@@ -1,139 +1,175 @@
 models:
-  - name: sail_activity
-    description: >
-      This model represents sail activity data from multiple sources, including SW1 and SW2. The data may differ between systems due to variations in data collection and processing. This standardized model is used downstream for reporting, metrics, and auditability, providing a unified view of sail activity across different sources. Key analytical use cases include analyzing sail activity trends, identifying discrepancies between sources, and tracking changes in sail activity over time.
+- name: sail_activity
+  description: 'This model represents sail activity data from multiple sources, including
+    SW1 and SW2. The data may differ between systems due to variations in data collection
+    and processing. This standardized model is used downstream for reporting, metrics,
+    and auditability, providing a unified view of sail activity across different sources.
+    Key analytical use cases include analyzing sail activity trends, identifying discrepancies
+    between sources, and tracking changes in sail activity over time.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - SAIL_ACTIVITY_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: SAIL_ACTIVITY_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of SAIL_ACTIVITY_ID
+      and DATA_SOURCE. This key ensures row uniqueness and facilitates data integration
+      across different sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the sail activity data, either SW1 or SW2.
+      This column is used to track the origin of the data and identify potential discrepancies
+      between sources.
+
+      '
+  - name: SAIL_ACTIVITY_ID
+    description: 'A unique identifier for the sail activity, used in conjunction with
+      DATA_SOURCE to ensure row uniqueness. This column is critical for tracking and
+      analyzing sail activity trends.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - SAIL_ACTIVITY_ID
-            - DATA_SOURCE
+    - not_null
+  - name: SAIL_EVENT_DATE_TIME
+    description: 'The date and time of the sail event, used for tracking and analyzing
+      sail activity trends over time.
 
-    columns:
-      - name: SAIL_ACTIVITY_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of SAIL_ACTIVITY_ID and DATA_SOURCE. This key ensures row uniqueness and facilitates data integration across different sources.
+      '
+  - name: SAIL_EVENT_TYPE
+    description: 'The type of sail event, providing context for the sail activity
+      data.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the sail activity data, either SW1 or SW2. This column is used to track the origin of the data and identify potential discrepancies between sources.
+      '
+  - name: PORT_CODE
+    description: 'The code for the port where the sail event occurred, used for analyzing
+      sail activity by location.
 
-      - name: SAIL_ACTIVITY_ID
-        description: >
-          A unique identifier for the sail activity, used in conjunction with DATA_SOURCE to ensure row uniqueness. This column is critical for tracking and analyzing sail activity trends.
+      '
+  - name: PIER_CODE
+    description: 'The code for the pier where the sail event occurred, providing additional
+      location context for the sail activity data.
 
-        tests:
-          - not_null
+      '
+  - name: MAY_EMBARK
+    description: 'A flag indicating whether embarkation is allowed, used for analyzing
+      sail activity rules and restrictions.
 
-      - name: SAIL_EVENT_DATE_TIME
-        description: >
-          The date and time of the sail event, used for tracking and analyzing sail activity trends over time.
+      '
+  - name: MAY_DISEMBARK
+    description: 'A flag indicating whether disembarkation is allowed, used for analyzing
+      sail activity rules and restrictions.
 
-      - name: SAIL_EVENT_TYPE
-        description: >
-          The type of sail event, providing context for the sail activity data.
+      '
+  - name: SHIP_CODE
+    description: 'The code for the ship involved in the sail event, used for analyzing
+      sail activity by vessel.
 
-      - name: PORT_CODE
-        description: >
-          The code for the port where the sail event occurred, used for analyzing sail activity by location.
+      '
+  - name: RELATIVE_DAY
+    description: 'The relative day of the sail event, used for analyzing sail activity
+      trends over time.
 
-      - name: PIER_CODE
-        description: >
-          The code for the pier where the sail event occurred, providing additional location context for the sail activity data.
+      '
+  - name: ACTIVITY
+    description: 'A description of the sail activity, providing context for the sail
+      event data.
 
-      - name: MAY_EMBARK
-        description: >
-          A flag indicating whether embarkation is allowed, used for analyzing sail activity rules and restrictions.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes about the sail activity, used for analyzing
+      sail activity trends and identifying potential issues.
 
-      - name: MAY_DISEMBARK
-        description: >
-          A flag indicating whether disembarkation is allowed, used for analyzing sail activity rules and restrictions.
+      '
+  - name: DEP_ARR_CODE
+    description: 'The code for the departure or arrival location, used for analyzing
+      sail activity by location.
 
-      - name: SHIP_CODE
-        description: >
-          The code for the ship involved in the sail event, used for analyzing sail activity by vessel.
+      '
+  - name: DEP_ARR_REF_ID
+    description: 'A reference ID for the departure or arrival location, providing
+      additional context for the sail activity data.
 
-      - name: RELATIVE_DAY
-        description: >
-          The relative day of the sail event, used for analyzing sail activity trends over time.
+      '
+  - name: NOTES
+    description: 'Additional notes or comments about the sail activity, used for analyzing
+      sail activity trends and identifying potential issues.
 
-      - name: ACTIVITY
-        description: >
-          A description of the sail activity, providing context for the sail event data.
+      '
+  - name: OWNERSHIP_CODE
+    description: 'The code for the ownership or management of the sail activity, used
+      for analyzing sail activity by responsible party.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes about the sail activity, used for analyzing sail activity trends and identifying potential issues.
+      '
+  - name: SETUP_SESSION_ID
+    description: 'A unique ID for the setup session, used for analyzing sail activity
+      by setup session.
 
-      - name: DEP_ARR_CODE
-        description: >
-          The code for the departure or arrival location, used for analyzing sail activity by location.
+      '
+  - name: DEL_SESSION_ID
+    description: 'A unique ID for the delivery session, used for analyzing sail activity
+      by delivery session.
 
-      - name: DEP_ARR_REF_ID
-        description: >
-          A reference ID for the departure or arrival location, providing additional context for the sail activity data.
+      '
+  - name: SETUP_FROM
+    description: 'The start time of the setup session, used for analyzing sail activity
+      by setup session.
 
-      - name: NOTES
-        description: >
-          Additional notes or comments about the sail activity, used for analyzing sail activity trends and identifying potential issues.
+      '
+  - name: SETUP_TO
+    description: 'The end time of the setup session, used for analyzing sail activity
+      by setup session.
 
-      - name: OWNERSHIP_CODE
-        description: >
-          The code for the ownership or management of the sail activity, used for analyzing sail activity by responsible party.
+      '
+  - name: TENDER_MODE
+    description: 'The mode of tendering, used for analyzing sail activity by tendering
+      method.
 
-      - name: SETUP_SESSION_ID
-        description: >
-          A unique ID for the setup session, used for analyzing sail activity by setup session.
+      '
+  - name: SAIL_EVENT_TS
+    description: 'The timestamp of the sail event, used for tracking and analyzing
+      sail activity trends over time.
 
-      - name: DEL_SESSION_ID
-        description: >
-          A unique ID for the delivery session, used for analyzing sail activity by delivery session.
+      '
+  - name: DRESS_CODE
+    description: 'The dress code for the sail event, used for analyzing sail activity
+      by dress code.
 
-      - name: SETUP_FROM
-        description: >
-          The start time of the setup session, used for analyzing sail activity by setup session.
+      '
+  - name: IS_ACTIVE
+    description: 'A flag indicating whether the sail activity is active, used for
+      analyzing sail activity trends and identifying potential issues.
 
-      - name: SETUP_TO
-        description: >
-          The end time of the setup session, used for analyzing sail activity by setup session.
+      '
+  - name: SAIL_EVENT_DATE_TIME_UTC
+    description: 'The date and time of the sail event in UTC, used for tracking and
+      analyzing sail activity trends over time.
 
-      - name: TENDER_MODE
-        description: >
-          The mode of tendering, used for analyzing sail activity by tendering method.
+      '
+  - name: DECK_ONLY
+    description: 'A flag indicating whether the sail activity is deck-only, used for
+      analyzing sail activity trends and identifying potential issues.
 
-      - name: SAIL_EVENT_TS
-        description: >
-          The timestamp of the sail event, used for tracking and analyzing sail activity trends over time.
+      '
+  - name: ACTIVITY_CODE
+    description: 'A code for the sail activity, used for analyzing sail activity trends
+      and identifying potential issues.
 
-      - name: DRESS_CODE
-        description: >
-          The dress code for the sail event, used for analyzing sail activity by dress code.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the sail activity data, used
+      for tracking changes to the data over time.
 
-      - name: IS_ACTIVE
-        description: >
-          A flag indicating whether the sail activity is active, used for analyzing sail activity trends and identifying potential issues.
-
-      - name: SAIL_EVENT_DATE_TIME_UTC
-        description: >
-          The date and time of the sail event in UTC, used for tracking and analyzing sail activity trends over time.
-
-      - name: DECK_ONLY
-        description: >
-          A flag indicating whether the sail activity is deck-only, used for analyzing sail activity trends and identifying potential issues.
-
-      - name: ACTIVITY_CODE
-        description: >
-          A code for the sail activity, used for analyzing sail activity trends and identifying potential issues.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the sail activity data, used for tracking changes to the data over time.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the sail activity data has been deleted in the source system, used for tracking changes to the data over time.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the sail activity data has been deleted
+      in the source system, used for tracking changes to the data over time.

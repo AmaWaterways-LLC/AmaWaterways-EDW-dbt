@@ -1,88 +1,91 @@
 models:
-  - name: ship_cabin_ctg_link
-    description: >
-      This model represents the standardized link between ship cabins and their respective categories, 
-      sourced from multiple systems (SW1 and SW2). The data from these systems may differ due to 
-      variations in data entry, updates, or system-specific nuances. This model is used downstream 
-      for reporting, analytics, and auditability, providing a unified view of ship cabin categories. 
-      Key analytical use cases include analyzing cabin capacity, rollaway beds, and child beds.
+- name: ship_cabin_ctg_link
+  description: 'This model represents the standardized link between ship cabins and
+    their respective categories,  sourced from multiple systems (SW1 and SW2). The
+    data from these systems may differ due to  variations in data entry, updates,
+    or system-specific nuances. This model is used downstream  for reporting, analytics,
+    and auditability, providing a unified view of ship cabin categories.  Key analytical
+    use cases include analyzing cabin capacity, rollaway beds, and child beds.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: SHIP_CABIN_CTG_LINK_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of RECORD_ID
+      and DATA_SOURCE,  ensuring row uniqueness across multiple data sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the data, either SW1 or SW2, indicating the
+      origin of the record.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the record within its source system, used
+      in combination with  DATA_SOURCE to ensure row uniqueness.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: SHIP_CODE
+    description: 'A code representing the ship, used for identification and analysis.
 
-    columns:
-      - name: SHIP_CABIN_CTG_LINK_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of RECORD_ID and DATA_SOURCE, 
-          ensuring row uniqueness across multiple data sources.
+      '
+  - name: CABIN_NUMBER
+    description: 'The number assigned to the cabin, used for identification and analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the data, either SW1 or SW2, indicating the origin of the record.
+      '
+  - name: CABIN_CATEGORY
+    description: 'The category of the cabin, used for classification and analysis.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the record within its source system, used in combination with 
-          DATA_SOURCE to ensure row uniqueness.
-        tests:
-          - not_null
+      '
+  - name: EFF_SAIL_FROM
+    description: 'The effective sail-from date, indicating the start of the cabin''s
+      availability.
 
-      - name: SHIP_CODE
-        description: >
-          A code representing the ship, used for identification and analysis.
+      '
+  - name: EFF_SAIL_TO
+    description: 'The effective sail-to date, indicating the end of the cabin''s availability.
 
-      - name: CABIN_NUMBER
-        description: >
-          The number assigned to the cabin, used for identification and analysis.
+      '
+  - name: ROLLAWAY_BEDS
+    description: 'The number of rollaway beds available in the cabin.
 
-      - name: CABIN_CATEGORY
-        description: >
-          The category of the cabin, used for classification and analysis.
+      '
+  - name: CABIN_CAPACITY
+    description: 'The maximum capacity of the cabin.
 
-      - name: EFF_SAIL_FROM
-        description: >
-          The effective sail-from date, indicating the start of the cabin's availability.
+      '
+  - name: IS_ACTIVE
+    description: 'A flag indicating whether the cabin is active or not.
 
-      - name: EFF_SAIL_TO
-        description: >
-          The effective sail-to date, indicating the end of the cabin's availability.
+      '
+  - name: EXT_CABIN_CONTRACT_TYPE
+    description: 'The type of contract associated with the cabin.
 
-      - name: ROLLAWAY_BEDS
-        description: >
-          The number of rollaway beds available in the cabin.
+      '
+  - name: ACCOUNT_NUMBER
+    description: 'The account number associated with the cabin.
 
-      - name: CABIN_CAPACITY
-        description: >
-          The maximum capacity of the cabin.
+      '
+  - name: CHILD_BEDS
+    description: 'The number of child beds available in the cabin.
 
-      - name: IS_ACTIVE
-        description: >
-          A flag indicating whether the cabin is active or not.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the record.
 
-      - name: EXT_CABIN_CONTRACT_TYPE
-        description: >
-          The type of contract associated with the cabin.
-
-      - name: ACCOUNT_NUMBER
-        description: >
-          The account number associated with the cabin.
-
-      - name: CHILD_BEDS
-        description: >
-          The number of child beds available in the cabin.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the record.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the record has been deleted in the source system.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the record has been deleted in the source
+      system.

@@ -1,121 +1,134 @@
 models:
-  - name: hotel_address
-    description: >
-      The hotel_address model represents a standardized view of hotel address data from multiple source systems, SW1 and SW2. 
-      Data from these systems may differ due to variations in data collection, processing, or update frequencies. 
-      This model is used downstream to provide a unified view of hotel address information for reporting, analytics, and auditability purposes. 
-      Key analytical use cases include analyzing hotel address data by region, country, or city, and tracking changes to hotel addresses over time.
+- name: hotel_address
+  description: 'The hotel_address model represents a standardized view of hotel address
+    data from multiple source systems, SW1 and SW2.  Data from these systems may differ
+    due to variations in data collection, processing, or update frequencies.  This
+    model is used downstream to provide a unified view of hotel address information
+    for reporting, analytics, and auditability purposes.  Key analytical use cases
+    include analyzing hotel address data by region, country, or city, and tracking
+    changes to hotel addresses over time.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - HOTEL_ID
+      - SEQ_NUMBER
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: HOTEL_ADDRESS_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of HOTEL_ID,
+      SEQ_NUMBER, and DATA_SOURCE.  This key ensures row uniqueness and facilitates
+      efficient data retrieval and analysis.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the hotel address data originates,
+      either SW1 or SW2.  This column allows for data lineage tracking and source-specific
+      analysis.
+
+      '
+  - name: SEQ_NUMBER
+    description: 'A sequence number assigned to the hotel address record, used for
+      ordering and tracking changes.  This column is part of the primary key and ensures
+      row uniqueness.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - HOTEL_ID
-            - SEQ_NUMBER
-            - DATA_SOURCE
+    - not_null
+  - name: ADDRESS_TYPE
+    description: 'The type of address associated with the hotel, such as mailing or
+      shipping.  This column provides context for the address data and supports address-type
+      specific analysis.
 
-    columns:
-      - name: HOTEL_ADDRESS_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of HOTEL_ID, SEQ_NUMBER, and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates efficient data retrieval and analysis.
+      '
+  - name: ADDRESS_LINE1
+    description: 'The first line of the hotel address, typically containing the street
+      number and name.  This column is a key component of the hotel address and is
+      used for geospatial analysis and address validation.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the hotel address data originates, either SW1 or SW2. 
-          This column allows for data lineage tracking and source-specific analysis.
+      '
+  - name: ADDRESS_LINE2
+    description: 'The second line of the hotel address, often containing additional
+      address details such as suite numbers or building names.  This column provides
+      supplementary address information and supports detailed address analysis.
 
-      - name: SEQ_NUMBER
-        description: >
-          A sequence number assigned to the hotel address record, used for ordering and tracking changes. 
-          This column is part of the primary key and ensures row uniqueness.
+      '
+  - name: ADDRESS_CITY
+    description: 'The city in which the hotel is located.  This column is used for
+      geographic analysis, regional reporting, and city-specific insights.
 
-        tests:
-          - not_null
+      '
+  - name: STATE_CODE
+    description: 'The state or province code associated with the hotel address.  This
+      column supports regional analysis, state-level reporting, and geographic data
+      visualization.
 
-      - name: ADDRESS_TYPE
-        description: >
-          The type of address associated with the hotel, such as mailing or shipping. 
-          This column provides context for the address data and supports address-type specific analysis.
+      '
+  - name: ZIP
+    description: 'The postal code or zip code associated with the hotel address.  This
+      column is used for geospatial analysis, address validation, and zip-code level
+      reporting.
 
-      - name: ADDRESS_LINE1
-        description: >
-          The first line of the hotel address, typically containing the street number and name. 
-          This column is a key component of the hotel address and is used for geospatial analysis and address validation.
+      '
+  - name: COUNTRY_CODE
+    description: 'The country code associated with the hotel address.  This column
+      supports international analysis, country-level reporting, and global data visualization.
 
-      - name: ADDRESS_LINE2
-        description: >
-          The second line of the hotel address, often containing additional address details such as suite numbers or building names. 
-          This column provides supplementary address information and supports detailed address analysis.
+      '
+  - name: IS_ADDRESS_MAILING
+    description: 'A flag indicating whether the address is a mailing address.  This
+      column provides context for the address data and supports address-type specific
+      analysis.
 
-      - name: ADDRESS_CITY
-        description: >
-          The city in which the hotel is located. 
-          This column is used for geographic analysis, regional reporting, and city-specific insights.
+      '
+  - name: IS_ADDRESS_SHIPPING
+    description: 'A flag indicating whether the address is a shipping address.  This
+      column provides supplementary address information and supports detailed address
+      analysis.
 
-      - name: STATE_CODE
-        description: >
-          The state or province code associated with the hotel address. 
-          This column supports regional analysis, state-level reporting, and geographic data visualization.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes associated with the hotel address.  This
+      column provides supplementary information and supports detailed address analysis.
 
-      - name: ZIP
-        description: >
-          The postal code or zip code associated with the hotel address. 
-          This column is used for geospatial analysis, address validation, and zip-code level reporting.
+      '
+  - name: HOTEL_ID
+    description: 'A unique identifier for the hotel.  This column is part of the primary
+      key and ensures row uniqueness.
 
-      - name: COUNTRY_CODE
-        description: >
-          The country code associated with the hotel address. 
-          This column supports international analysis, country-level reporting, and global data visualization.
+      '
+    tests:
+    - not_null
+  - name: HOTEL_ADDR_ID
+    description: 'A unique identifier for the hotel address.  This column provides
+      supplementary information and supports detailed address analysis.
 
-      - name: IS_ADDRESS_MAILING
-        description: >
-          A flag indicating whether the address is a mailing address. 
-          This column provides context for the address data and supports address-type specific analysis.
+      '
+  - name: ADDRESS_LINE3
+    description: 'The third line of the hotel address, often containing additional
+      address details.  This column provides supplementary address information and
+      supports detailed address analysis.
 
-      - name: IS_ADDRESS_SHIPPING
-        description: >
-          A flag indicating whether the address is a shipping address. 
-          This column provides supplementary address information and supports detailed address analysis.
+      '
+  - name: ADDRESS_LINE4
+    description: 'The fourth line of the hotel address, typically containing special
+      instructions or notes.  This column provides supplementary address information
+      and supports detailed address analysis.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes associated with the hotel address. 
-          This column provides supplementary information and supports detailed address analysis.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the hotel address record was last updated.  This
+      column supports data freshness analysis, update tracking, and auditability purposes.
 
-      - name: HOTEL_ID
-        description: >
-          A unique identifier for the hotel. 
-          This column is part of the primary key and ensures row uniqueness.
-
-        tests:
-          - not_null
-
-      - name: HOTEL_ADDR_ID
-        description: >
-          A unique identifier for the hotel address. 
-          This column provides supplementary information and supports detailed address analysis.
-
-      - name: ADDRESS_LINE3
-        description: >
-          The third line of the hotel address, often containing additional address details. 
-          This column provides supplementary address information and supports detailed address analysis.
-
-      - name: ADDRESS_LINE4
-        description: >
-          The fourth line of the hotel address, typically containing special instructions or notes. 
-          This column provides supplementary address information and supports detailed address analysis.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the hotel address record was last updated. 
-          This column supports data freshness analysis, update tracking, and auditability purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the hotel address record has been deleted in the source system. 
-          This column supports data lineage tracking, delete detection, and auditability purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the hotel address record has been deleted
+      in the source system.  This column supports data lineage tracking, delete detection,
+      and auditability purposes.

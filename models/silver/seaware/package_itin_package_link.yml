@@ -1,56 +1,59 @@
 models:
-  - name: package_itin_package_link
-    description: >
-      This model represents the link between packages and itineraries in the enterprise domain. 
-      Data from multiple systems may differ due to varying update frequencies or data entry practices. 
-      This standardized model is used downstream for reporting, metrics, and auditability, providing a unified view of package-itinerary relationships. 
-      Key analytical use cases include analyzing package utilization, itinerary optimization, and data quality assessments.
+- name: package_itin_package_link
+  description: 'This model represents the link between packages and itineraries in
+    the enterprise domain.  Data from multiple systems may differ due to varying update
+    frequencies or data entry practices.  This standardized model is used downstream
+    for reporting, metrics, and auditability, providing a unified view of package-itinerary
+    relationships.  Key analytical use cases include analyzing package utilization,
+    itinerary optimization, and data quality assessments.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - ITIN_RECORD_ID
+      - PACKAGE_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY
+    description: 'A unique identifier for the package-itinerary link, generated from
+      the combination of ITIN_RECORD_ID, PACKAGE_ID, and DATA_SOURCE.  This surrogate
+      key ensures row uniqueness and facilitates efficient data retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the data was extracted, either ''SW1''
+      or ''SW2''.  This column allows for data lineage tracking and source-specific
+      analysis.
+
+      '
+  - name: ITIN_RECORD_ID
+    description: 'The unique identifier for the itinerary record, used in conjunction
+      with PACKAGE_ID and DATA_SOURCE to create the surrogate key.  This column is
+      crucial for linking packages to their corresponding itineraries.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - ITIN_RECORD_ID
-            - PACKAGE_ID
-            - DATA_SOURCE
+    - not_null
+  - name: PACKAGE_ID
+    description: 'The unique identifier for the package, used in conjunction with
+      ITIN_RECORD_ID and DATA_SOURCE to create the surrogate key.  This column is
+      essential for analyzing package utilization and optimization.
 
-    columns:
-      - name: PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY
-        description: >
-          A unique identifier for the package-itinerary link, generated from the combination of ITIN_RECORD_ID, PACKAGE_ID, and DATA_SOURCE. 
-          This surrogate key ensures row uniqueness and facilitates efficient data retrieval.
+      '
+    tests:
+    - not_null
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the data was last updated in the source system.  This
+      column allows for data freshness analysis and incremental data loading.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the data was extracted, either 'SW1' or 'SW2'. 
-          This column allows for data lineage tracking and source-specific analysis.
-
-      - name: ITIN_RECORD_ID
-        description: >
-          The unique identifier for the itinerary record, used in conjunction with PACKAGE_ID and DATA_SOURCE to create the surrogate key. 
-          This column is crucial for linking packages to their corresponding itineraries.
-
-        tests:
-          - not_null
-
-      - name: PACKAGE_ID
-        description: >
-          The unique identifier for the package, used in conjunction with ITIN_RECORD_ID and DATA_SOURCE to create the surrogate key. 
-          This column is essential for analyzing package utilization and optimization.
-
-        tests:
-          - not_null
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the data was last updated in the source system. 
-          This column allows for data freshness analysis and incremental data loading.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the data was deleted in the source system. 
-          This column is used for data quality assessments and auditing purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the data was deleted in the source system.  This
+      column is used for data quality assessments and auditing purposes.

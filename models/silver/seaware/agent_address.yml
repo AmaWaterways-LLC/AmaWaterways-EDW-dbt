@@ -1,132 +1,131 @@
 models:
-  - name: agent_address
-    description: >
-      The agent_address model represents a standardized view of agent addresses across multiple systems, 
-      including SW1 and SW2. The data from these systems may differ due to varying data entry practices 
-      or system-specific requirements. This model is used downstream to provide a unified view of agent 
-      addresses for reporting, analytics, and auditability purposes. Key analytical use cases include 
-      tracking agent address changes over time and analyzing address data quality.
+- name: agent_address
+  description: 'The agent_address model represents a standardized view of agent addresses
+    across multiple systems,  including SW1 and SW2. The data from these systems may
+    differ due to varying data entry practices  or system-specific requirements. This
+    model is used downstream to provide a unified view of agent  addresses for reporting,
+    analytics, and auditability purposes. Key analytical use cases include  tracking
+    agent address changes over time and analyzing address data quality.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - AGENT_ADDR_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: AGENT_ADDRESS_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of AGENT_ADDR_ID
+      and DATA_SOURCE.  This key ensures row uniqueness across multiple data sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the agent address data originated,
+      either SW1 or SW2.  This column is used to track data provenance and facilitate
+      data quality analysis.
+
+      '
+  - name: AGENT_ID
+    description: 'The unique identifier for the agent associated with the address.
+      This column is used to  link agent addresses to other agent-related data.
+
+      '
+  - name: SEQ_NUMBER
+    description: 'A sequence number assigned to the agent address, potentially used
+      for sorting or  prioritization purposes.
+
+      '
+  - name: ADDRESS_TYPE
+    description: 'The type of address, such as mailing or shipping. This column is
+      used to categorize  addresses for reporting and analytics.
+
+      '
+  - name: ADDRESS_LINE1
+    description: 'The first line of the agent''s address. This column is used to store
+      the primary  address information.
+
+      '
+  - name: ADDRESS_LINE2
+    description: 'The second line of the agent''s address, if applicable. This column
+      is used to store  additional address information.
+
+      '
+  - name: ADDRESS_CITY
+    description: 'The city associated with the agent''s address. This column is used
+      for geographic  analysis and reporting.
+
+      '
+  - name: STATE_CODE
+    description: 'The state or province code associated with the agent''s address.
+      This column is used  for geographic analysis and reporting.
+
+      '
+  - name: ZIP
+    description: 'The postal code associated with the agent''s address. This column
+      is used for  geographic analysis and reporting.
+
+      '
+  - name: COUNTRY_CODE
+    description: 'The country code associated with the agent''s address. This column
+      is used for  international reporting and analysis.
+
+      '
+  - name: IS_ADDRESS_MAILING
+    description: 'A flag indicating whether the address is designated as a mailing
+      address. This  column is used for address categorization and reporting.
+
+      '
+  - name: IS_ADDRESS_SHIPPING
+    description: 'A flag indicating whether the address is designated as a shipping
+      address. This  column is used for address categorization and reporting.
+
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes associated with the agent address.
+      This column is used  to store supplementary information.
+
+      '
+  - name: AGENT_ADDR_ID
+    description: "The unique identifier for the agent address. This column is used\
+      \ in combination  with DATA_SOURCE to ensure row uniqueness. \n"
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - AGENT_ADDR_ID
-            - DATA_SOURCE
+    - not_null
+  - name: ADDRESS_LINE3
+    description: 'The third line of the agent''s address, if applicable. This column
+      is used to store  additional address information.
 
-    columns:
-      - name: AGENT_ADDRESS_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of AGENT_ADDR_ID and DATA_SOURCE. 
-          This key ensures row uniqueness across multiple data sources.
+      '
+  - name: ADDRESS_LINE4
+    description: 'The fourth line of the agent''s address, if applicable. This column
+      is used to store  additional address information.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the agent address data originated, either SW1 or SW2. 
-          This column is used to track data provenance and facilitate data quality analysis.
+      '
+  - name: DATE_FROM
+    description: 'The start date associated with the agent address, if applicable.
+      This column is used  to track address changes over time.
 
-      - name: AGENT_ID
-        description: >
-          The unique identifier for the agent associated with the address. This column is used to 
-          link agent addresses to other agent-related data.
+      '
+  - name: DATE_TO
+    description: 'The end date associated with the agent address, if applicable. This
+      column is used  to track address changes over time.
 
-      - name: SEQ_NUMBER
-        description: >
-          A sequence number assigned to the agent address, potentially used for sorting or 
-          prioritization purposes.
+      '
+  - name: ARE_DATES_EVERY_YEAR
+    description: 'A flag indicating whether the address dates are recurring every
+      year. This column  is used for address analysis and reporting.
 
-      - name: ADDRESS_TYPE
-        description: >
-          The type of address, such as mailing or shipping. This column is used to categorize 
-          addresses for reporting and analytics.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the agent address was last updated. This column
+      is used for  data freshness and auditability purposes.
 
-      - name: ADDRESS_LINE1
-        description: >
-          The first line of the agent's address. This column is used to store the primary 
-          address information.
-
-      - name: ADDRESS_LINE2
-        description: >
-          The second line of the agent's address, if applicable. This column is used to store 
-          additional address information.
-
-      - name: ADDRESS_CITY
-        description: >
-          The city associated with the agent's address. This column is used for geographic 
-          analysis and reporting.
-
-      - name: STATE_CODE
-        description: >
-          The state or province code associated with the agent's address. This column is used 
-          for geographic analysis and reporting.
-
-      - name: ZIP
-        description: >
-          The postal code associated with the agent's address. This column is used for 
-          geographic analysis and reporting.
-
-      - name: COUNTRY_CODE
-        description: >
-          The country code associated with the agent's address. This column is used for 
-          international reporting and analysis.
-
-      - name: IS_ADDRESS_MAILING
-        description: >
-          A flag indicating whether the address is designated as a mailing address. This 
-          column is used for address categorization and reporting.
-
-      - name: IS_ADDRESS_SHIPPING
-        description: >
-          A flag indicating whether the address is designated as a shipping address. This 
-          column is used for address categorization and reporting.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes associated with the agent address. This column is used 
-          to store supplementary information.
-
-      - name: AGENT_ADDR_ID
-        description: >
-          The unique identifier for the agent address. This column is used in combination 
-          with DATA_SOURCE to ensure row uniqueness. 
-        tests:
-          - not_null
-
-      - name: ADDRESS_LINE3
-        description: >
-          The third line of the agent's address, if applicable. This column is used to store 
-          additional address information.
-
-      - name: ADDRESS_LINE4
-        description: >
-          The fourth line of the agent's address, if applicable. This column is used to store 
-          additional address information.
-
-      - name: DATE_FROM
-        description: >
-          The start date associated with the agent address, if applicable. This column is used 
-          to track address changes over time.
-
-      - name: DATE_TO
-        description: >
-          The end date associated with the agent address, if applicable. This column is used 
-          to track address changes over time.
-
-      - name: ARE_DATES_EVERY_YEAR
-        description: >
-          A flag indicating whether the address dates are recurring every year. This column 
-          is used for address analysis and reporting.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the agent address was last updated. This column is used for 
-          data freshness and auditability purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the agent address was deleted in the source system. This 
-          column is used for data quality and auditability purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the agent address was deleted in the source
+      system. This  column is used for data quality and auditability purposes.

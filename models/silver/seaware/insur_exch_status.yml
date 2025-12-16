@@ -1,58 +1,67 @@
 models:
-  - name: insur_exch_status
-    description: >
-      This model represents the standardized insurance exchange status data from multiple systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data collection, processing, and storage. 
-      This model is used downstream to provide a unified view of insurance exchange status data for reporting, metrics, and auditability purposes. 
-      Key analytical use cases include analyzing insurance exchange status trends, identifying discrepancies between systems, and ensuring data consistency.
+- name: insur_exch_status
+  description: 'This model represents the standardized insurance exchange status data
+    from multiple systems, SW1 and SW2.  The data from these systems may differ due
+    to differences in data collection, processing, and storage.  This model is used
+    downstream to provide a unified view of insurance exchange status data for reporting,
+    metrics, and auditability purposes.  Key analytical use cases include analyzing
+    insurance exchange status trends, identifying discrepancies between systems, and
+    ensuring data consistency.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - INSUR_EXCH_STATUS
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INSUR_EXCH_STATUS_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of INSUR_EXCH_STATUS
+      and DATA_SOURCE columns.  This key ensures row uniqueness and facilitates efficient
+      data retrieval and analysis.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the insurance exchange status data, either
+      SW1 or SW2.  This column is used to identify the origin of the data and to reconcile
+      any discrepancies between systems.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - INSUR_EXCH_STATUS
-            - DATA_SOURCE
+    - not_null
+  - name: INSUR_EXCH_STATUS
+    description: 'The insurance exchange status, transformed to a standardized format.  This
+      column represents the core data element of the model and is used to analyze
+      insurance exchange status trends.
 
-    columns:
-      - name: INSUR_EXCH_STATUS_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of INSUR_EXCH_STATUS and DATA_SOURCE columns. 
-          This key ensures row uniqueness and facilitates efficient data retrieval and analysis.
+      '
+    tests:
+    - not_null
+  - name: RECORD_ID
+    description: 'A unique identifier for the insurance exchange status record, transformed
+      to a standardized numeric format.  This column is used to track and analyze
+      individual records.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the insurance exchange status data, either SW1 or SW2. 
-          This column is used to identify the origin of the data and to reconcile any discrepancies between systems.
-        tests:
-          - not_null
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the insurance exchange status,
+      transformed to a standardized string format.  This column provides context and
+      supplementary information for analysis.
 
-      - name: INSUR_EXCH_STATUS
-        description: >
-          The insurance exchange status, transformed to a standardized format. 
-          This column represents the core data element of the model and is used to analyze insurance exchange status trends.
-        tests:
-          - not_null
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the insurance exchange status
+      record, transformed to a standardized datetime format.  This column is used
+      to track data freshness and changes over time.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the insurance exchange status record, transformed to a standardized numeric format. 
-          This column is used to track and analyze individual records.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the insurance exchange status, transformed to a standardized string format. 
-          This column provides context and supplementary information for analysis.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the insurance exchange status record, transformed to a standardized datetime format. 
-          This column is used to track data freshness and changes over time.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the insurance exchange status record has been deleted in the source system. 
-          This column is used to identify and handle deleted records.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the insurance exchange status record has
+      been deleted in the source system.  This column is used to identify and handle
+      deleted records.

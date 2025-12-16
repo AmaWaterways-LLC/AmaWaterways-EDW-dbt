@@ -1,78 +1,95 @@
 models:
-  - name: res_hist_tree
-    description: >
-      The res_hist_tree model represents a standardized view of historical tree data from multiple source systems, including SW1 and SW2. This model is used to track changes to tree node data over time, enabling analytics and reporting on tree structure and evolution. The data from multiple systems may differ due to variations in data formatting, processing, and update frequencies. This model provides a unified view of the data, allowing for consistent analysis and decision-making. Key analytical use cases include reporting on tree node changes, analyzing tree structure, and auditing data updates.
+- name: res_hist_tree
+  description: 'The res_hist_tree model represents a standardized view of historical
+    tree data from multiple source systems, including SW1 and SW2. This model is used
+    to track changes to tree node data over time, enabling analytics and reporting
+    on tree structure and evolution. The data from multiple systems may differ due
+    to variations in data formatting, processing, and update frequencies. This model
+    provides a unified view of the data, allowing for consistent analysis and decision-making.
+    Key analytical use cases include reporting on tree node changes, analyzing tree
+    structure, and auditing data updates.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - TREE_NODE_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: RES_HIST_TREE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of TREE_NODE_ID
+      and DATA_SOURCE, used to uniquely identify each row in the model.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the data was extracted, either SW1
+      or SW2.
+
+      '
+  - name: TREE_NODE_ID
+    description: 'A unique identifier for the tree node, used in combination with
+      DATA_SOURCE to uniquely identify each row in the model.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TREE_NODE_ID
-            - DATA_SOURCE
+    - not_null
+  - name: NODE_LEVEL
+    description: 'The level of the tree node, representing its position in the tree
+      hierarchy.
 
-    columns:
-      - name: RES_HIST_TREE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of TREE_NODE_ID and DATA_SOURCE, used to uniquely identify each row in the model.
+      '
+  - name: NODE_NAME
+    description: 'The name of the tree node, used for identification and analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the data was extracted, either SW1 or SW2.
+      '
+  - name: TRANS_ID_INSERT
+    description: 'The transaction ID associated with the insertion of the tree node.
 
-      - name: TREE_NODE_ID
-        description: >
-          A unique identifier for the tree node, used in combination with DATA_SOURCE to uniquely identify each row in the model.
-        tests:
-          - not_null
+      '
+  - name: TRANS_ID_DELETE
+    description: 'The transaction ID associated with the deletion of the tree node.
 
-      - name: NODE_LEVEL
-        description: >
-          The level of the tree node, representing its position in the tree hierarchy.
+      '
+  - name: KEY_LEVEL_1
+    description: 'The first level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: NODE_NAME
-        description: >
-          The name of the tree node, used for identification and analysis.
+      '
+  - name: KEY_LEVEL_2
+    description: 'The second level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: TRANS_ID_INSERT
-        description: >
-          The transaction ID associated with the insertion of the tree node.
+      '
+  - name: KEY_LEVEL_3
+    description: 'The third level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: TRANS_ID_DELETE
-        description: >
-          The transaction ID associated with the deletion of the tree node.
+      '
+  - name: KEY_LEVEL_4
+    description: 'The fourth level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: KEY_LEVEL_1
-        description: >
-          The first level key associated with the tree node, used for analysis and reporting.
+      '
+  - name: KEY_LEVEL_5
+    description: 'The fifth level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: KEY_LEVEL_2
-        description: >
-          The second level key associated with the tree node, used for analysis and reporting.
+      '
+  - name: KEY_LEVEL_6
+    description: 'The sixth level key associated with the tree node, used for analysis
+      and reporting.
 
-      - name: KEY_LEVEL_3
-        description: >
-          The third level key associated with the tree node, used for analysis and reporting.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the tree node has been deleted in the
+      source system.
 
-      - name: KEY_LEVEL_4
-        description: >
-          The fourth level key associated with the tree node, used for analysis and reporting.
-
-      - name: KEY_LEVEL_5
-        description: >
-          The fifth level key associated with the tree node, used for analysis and reporting.
-
-      - name: KEY_LEVEL_6
-        description: >
-          The sixth level key associated with the tree node, used for analysis and reporting.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the tree node has been deleted in the source system.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the tree node data.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp of the last update to the tree node data.

@@ -1,196 +1,209 @@
 models:
-  - name: insurance_exch_header
-    description: >
-      This model represents the standardized insurance exchange header data from multiple systems, 
-      providing a unified view for downstream analytics and reporting. The data may differ across 
-      systems due to variations in data entry, processing, or timing. This model is used to 
-      generate key metrics, such as premium amounts, penalty amounts, and commissions, as well as 
-      to track claim status and insurance company share. It also enables auditability and 
-      traceability of insurance exchange transactions.
+- name: insurance_exch_header
+  description: 'This model represents the standardized insurance exchange header data
+    from multiple systems,  providing a unified view for downstream analytics and
+    reporting. The data may differ across  systems due to variations in data entry,
+    processing, or timing. This model is used to  generate key metrics, such as premium
+    amounts, penalty amounts, and commissions, as well as  to track claim status and
+    insurance company share. It also enables auditability and  traceability of insurance
+    exchange transactions.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - EXCH_HEADER_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INSURANCE_EXCH_HEADER_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of EXCH_HEADER_ID
+      and DATA_SOURCE,  ensuring row uniqueness across different data sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system identifier, indicating the origin of the insurance
+      exchange header data.
+
+      '
+  - name: EXCH_HEADER_ID
+    description: 'The unique identifier for the insurance exchange header, used in
+      combination with  DATA_SOURCE to ensure row uniqueness. This column is part
+      of the primary key.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - EXCH_HEADER_ID
-            - DATA_SOURCE
+    - not_null
+  - name: RES_ID
+    description: 'The identifier for the associated reservation, used for tracking
+      and linking insurance  exchange data to reservation information.
 
-    columns:
-      - name: INSURANCE_EXCH_HEADER_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of EXCH_HEADER_ID and DATA_SOURCE, 
-          ensuring row uniqueness across different data sources.
+      '
+  - name: GUEST_ID
+    description: 'The identifier for the guest associated with the insurance exchange,
+      used for tracking  and linking guest information to insurance exchange data.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system identifier, indicating the origin of the insurance exchange header data.
+      '
+  - name: CLIENT_ID
+    description: 'The identifier for the client associated with the insurance exchange,
+      used for tracking  and linking client information to insurance exchange data.
 
-      - name: EXCH_HEADER_ID
-        description: >
-          The unique identifier for the insurance exchange header, used in combination with 
-          DATA_SOURCE to ensure row uniqueness. This column is part of the primary key.
-        tests:
-          - not_null
+      '
+  - name: INSUR_EXCH_STATUS
+    description: 'The status of the insurance exchange, indicating the current state
+      of the exchange  process.
 
-      - name: RES_ID
-        description: >
-          The identifier for the associated reservation, used for tracking and linking insurance 
-          exchange data to reservation information.
+      '
+  - name: CANCELATION_TYPE
+    description: 'The type of cancelation, if applicable, indicating the reason for
+      cancelation.
 
-      - name: GUEST_ID
-        description: >
-          The identifier for the guest associated with the insurance exchange, used for tracking 
-          and linking guest information to insurance exchange data.
+      '
+  - name: CANCELATION_DATE
+    description: 'The date of cancelation, if applicable, indicating when the cancelation
+      occurred.
 
-      - name: CLIENT_ID
-        description: >
-          The identifier for the client associated with the insurance exchange, used for tracking 
-          and linking client information to insurance exchange data.
+      '
+  - name: INSURANCE_TYPE
+    description: 'The type of insurance associated with the exchange, indicating the
+      specific insurance  product.
 
-      - name: INSUR_EXCH_STATUS
-        description: >
-          The status of the insurance exchange, indicating the current state of the exchange 
-          process.
+      '
+  - name: PREMIUM_AMOUNT
+    description: 'The premium amount associated with the insurance exchange, used
+      for calculating  revenue and metrics.
 
-      - name: CANCELATION_TYPE
-        description: >
-          The type of cancelation, if applicable, indicating the reason for cancelation.
+      '
+  - name: PENALTY_AMOUNT
+    description: 'The penalty amount associated with the insurance exchange, used
+      for calculating  revenue and metrics.
 
-      - name: CANCELATION_DATE
-        description: >
-          The date of cancelation, if applicable, indicating when the cancelation occurred.
+      '
+  - name: INVOICE_TOTAL
+    description: 'The total invoice amount associated with the insurance exchange,
+      used for calculating  revenue and metrics.
 
-      - name: INSURANCE_TYPE
-        description: >
-          The type of insurance associated with the exchange, indicating the specific insurance 
-          product.
+      '
+  - name: CLAIM_DATE
+    description: 'The date of the claim, if applicable, indicating when the claim
+      was made.
 
-      - name: PREMIUM_AMOUNT
-        description: >
-          The premium amount associated with the insurance exchange, used for calculating 
-          revenue and metrics.
+      '
+  - name: CLAIM_NUMBER
+    description: 'The claim number, if applicable, used for tracking and linking claim
+      information.
 
-      - name: PENALTY_AMOUNT
-        description: >
-          The penalty amount associated with the insurance exchange, used for calculating 
-          revenue and metrics.
+      '
+  - name: CLAIM_STATUS
+    description: 'The status of the claim, if applicable, indicating the current state
+      of the claim  process.
 
-      - name: INVOICE_TOTAL
-        description: >
-          The total invoice amount associated with the insurance exchange, used for calculating 
-          revenue and metrics.
+      '
+  - name: COMMISSIONS
+    description: 'The commission amount associated with the insurance exchange, used
+      for calculating  revenue and metrics.
 
-      - name: CLAIM_DATE
-        description: >
-          The date of the claim, if applicable, indicating when the claim was made.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes associated with the insurance exchange,
+      used for  tracking and auditing purposes.
 
-      - name: CLAIM_NUMBER
-        description: >
-          The claim number, if applicable, used for tracking and linking claim information.
+      '
+  - name: SUBMISSION_DATE
+    description: 'The date of submission, indicating when the insurance exchange was
+      submitted.
 
-      - name: CLAIM_STATUS
-        description: >
-          The status of the claim, if applicable, indicating the current state of the claim 
-          process.
+      '
+  - name: SUBMISSION_DONE
+    description: 'The submission status, indicating whether the insurance exchange
+      has been  successfully submitted.
 
-      - name: COMMISSIONS
-        description: >
-          The commission amount associated with the insurance exchange, used for calculating 
-          revenue and metrics.
+      '
+  - name: COUPON_DATE
+    description: 'The date of the coupon, if applicable, indicating when the coupon
+      was issued.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes associated with the insurance exchange, used for 
-          tracking and auditing purposes.
+      '
+  - name: COUPON_NUMBER
+    description: 'The coupon number, if applicable, used for tracking and linking
+      coupon information.
 
-      - name: SUBMISSION_DATE
-        description: >
-          The date of submission, indicating when the insurance exchange was submitted.
+      '
+  - name: INSUR_COMPANY_SHARE
+    description: 'The insurance company''s share of the premium amount, used for calculating
+      revenue  and metrics.
 
-      - name: SUBMISSION_DONE
-        description: >
-          The submission status, indicating whether the insurance exchange has been 
-          successfully submitted.
+      '
+  - name: INSUR_CONFIRM_DATE
+    description: 'The date of insurance confirmation, indicating when the insurance
+      was confirmed.
 
-      - name: COUPON_DATE
-        description: >
-          The date of the coupon, if applicable, indicating when the coupon was issued.
+      '
+  - name: AGE
+    description: 'The age of the insured, used for calculating premiums and metrics.
 
-      - name: COUPON_NUMBER
-        description: >
-          The coupon number, if applicable, used for tracking and linking coupon information.
+      '
+  - name: FULLY_PAID
+    description: 'The fully paid status, indicating whether the insurance exchange
+      has been fully paid.
 
-      - name: INSUR_COMPANY_SHARE
-        description: >
-          The insurance company's share of the premium amount, used for calculating revenue 
-          and metrics.
+      '
+  - name: INSUR_CHANGE_DATE
+    description: 'The date of the insurance change, if applicable, indicating when
+      the insurance was  changed.
 
-      - name: INSUR_CONFIRM_DATE
-        description: >
-          The date of insurance confirmation, indicating when the insurance was confirmed.
+      '
+  - name: INSUR_CHANGE_DETAILS
+    description: 'The details of the insurance change, if applicable, used for tracking
+      and auditing  purposes.
 
-      - name: AGE
-        description: >
-          The age of the insured, used for calculating premiums and metrics.
+      '
+  - name: CURRENCY_CODE
+    description: 'The currency code associated with the insurance exchange, used for
+      calculating  revenue and metrics.
 
-      - name: FULLY_PAID
-        description: >
-          The fully paid status, indicating whether the insurance exchange has been fully paid.
+      '
+  - name: IS_ACTIVE
+    description: 'The active status, indicating whether the insurance exchange is
+      currently active.
 
-      - name: INSUR_CHANGE_DATE
-        description: >
-          The date of the insurance change, if applicable, indicating when the insurance was 
-          changed.
+      '
+  - name: SHIP_CODE
+    description: 'The ship code associated with the insurance exchange, used for tracking
+      and linking  ship information.
 
-      - name: INSUR_CHANGE_DETAILS
-        description: >
-          The details of the insurance change, if applicable, used for tracking and auditing 
-          purposes.
+      '
+  - name: SAIL_DATE_FROM
+    description: 'The sail date from, indicating the start date of the sailing period.
 
-      - name: CURRENCY_CODE
-        description: >
-          The currency code associated with the insurance exchange, used for calculating 
-          revenue and metrics.
+      '
+  - name: SAIL_DATE_TO
+    description: 'The sail date to, indicating the end date of the sailing period.
 
-      - name: IS_ACTIVE
-        description: >
-          The active status, indicating whether the insurance exchange is currently active.
+      '
+  - name: VACATION_DATE_FROM
+    description: 'The vacation date from, indicating the start date of the vacation
+      period.
 
-      - name: SHIP_CODE
-        description: >
-          The ship code associated with the insurance exchange, used for tracking and linking 
-          ship information.
+      '
+  - name: VACATION_DATE_TO
+    description: 'The vacation date to, indicating the end date of the vacation period.
 
-      - name: SAIL_DATE_FROM
-        description: >
-          The sail date from, indicating the start date of the sailing period.
+      '
+  - name: OFFICE_CODE
+    description: 'The office code associated with the insurance exchange, used for
+      tracking and linking  office information.
 
-      - name: SAIL_DATE_TO
-        description: >
-          The sail date to, indicating the end date of the sailing period.
+      '
+  - name: SOURCE_DELETED
+    description: 'The source deleted flag, indicating whether the record has been
+      deleted in the  source system.
 
-      - name: VACATION_DATE_FROM
-        description: >
-          The vacation date from, indicating the start date of the vacation period.
-
-      - name: VACATION_DATE_TO
-        description: >
-          The vacation date to, indicating the end date of the vacation period.
-
-      - name: OFFICE_CODE
-        description: >
-          The office code associated with the insurance exchange, used for tracking and linking 
-          office information.
-
-      - name: SOURCE_DELETED
-        description: >
-          The source deleted flag, indicating whether the record has been deleted in the 
-          source system.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The last updated timestamp, indicating when the record was last updated.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The last updated timestamp, indicating when the record was last updated.

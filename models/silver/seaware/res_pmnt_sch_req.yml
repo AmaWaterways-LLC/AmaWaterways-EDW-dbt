@@ -1,82 +1,88 @@
 models:
-  - name: res_pmnt_sch_req
-    description: >
-      This model represents a standardized view of payment schedule requests from multiple source systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data entry, processing, or system-specific nuances. 
-      This model is used downstream for reporting, analytics, and auditability purposes, providing a unified view of payment schedules. 
-      Key analytical use cases include tracking payment schedules, monitoring due dates and expiration dates, and analyzing payment amounts.
+- name: res_pmnt_sch_req
+  description: 'This model represents a standardized view of payment schedule requests
+    from multiple source systems, SW1 and SW2.  The data from these systems may differ
+    due to differences in data entry, processing, or system-specific nuances.  This
+    model is used downstream for reporting, analytics, and auditability purposes,
+    providing a unified view of payment schedules.  Key analytical use cases include
+    tracking payment schedules, monitoring due dates and expiration dates, and analyzing
+    payment amounts.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - DUE_TYPE
+      - RES_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: RES_PMNT_SCH_REQ_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of DUE_TYPE,
+      RES_ID, and DATA_SOURCE.  This key ensures row uniqueness and facilitates efficient
+      data retrieval and analysis.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the payment schedule request data originates,
+      either SW1 or SW2.  This column is used to track data lineage and identify system-specific
+      differences.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the payment schedule request record within
+      the source system.  This column is used for data tracking and auditing purposes.
+
+      '
+  - name: RES_ID
+    description: 'A unique identifier for the resource associated with the payment
+      schedule request.  This column is used to link payment schedules to specific
+      resources.
+
+      '
+  - name: DUE_TYPE
+    description: 'The type of due date associated with the payment schedule request,
+      such as a specific date or a recurring schedule.  This column is used to categorize
+      and analyze payment schedules.
+
+      '
+  - name: AMOUNT
+    description: 'The amount associated with the payment schedule request.  This column
+      is used to track and analyze payment amounts.
+
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the payment schedule request was last updated
+      in the source system.  This column is used to track data freshness and changes.
+
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the payment schedule request has been
+      deleted in the source system.  This column is used to track data lineage and
+      identify deleted records.
+
+      '
+  - name: DUE_DATE
+    description: 'The due date associated with the payment schedule request.  This
+      column is used to track and analyze payment schedules.
+
+      '
+  - name: EXPIRATION_DATE
+    description: 'The expiration date associated with the payment schedule request.  This
+      column is used to track and analyze payment schedules.
+
+      '
+  - name: DUE_TYPE
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - DUE_TYPE
-            - RES_ID
-            - DATA_SOURCE
-
-    columns:
-      - name: RES_PMNT_SCH_REQ_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of DUE_TYPE, RES_ID, and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates efficient data retrieval and analysis.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the payment schedule request data originates, either SW1 or SW2. 
-          This column is used to track data lineage and identify system-specific differences.
-
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the payment schedule request record within the source system. 
-          This column is used for data tracking and auditing purposes.
-
-      - name: RES_ID
-        description: >
-          A unique identifier for the resource associated with the payment schedule request. 
-          This column is used to link payment schedules to specific resources.
-
-      - name: DUE_TYPE
-        description: >
-          The type of due date associated with the payment schedule request, such as a specific date or a recurring schedule. 
-          This column is used to categorize and analyze payment schedules.
-
-      - name: AMOUNT
-        description: >
-          The amount associated with the payment schedule request. 
-          This column is used to track and analyze payment amounts.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the payment schedule request was last updated in the source system. 
-          This column is used to track data freshness and changes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the payment schedule request has been deleted in the source system. 
-          This column is used to track data lineage and identify deleted records.
-
-      - name: DUE_DATE
-        description: >
-          The due date associated with the payment schedule request. 
-          This column is used to track and analyze payment schedules.
-
-      - name: EXPIRATION_DATE
-        description: >
-          The expiration date associated with the payment schedule request. 
-          This column is used to track and analyze payment schedules.
-
-      - name: DUE_TYPE
-        tests:
-          - not_null
-
-      - name: RES_ID
-        tests:
-          - not_null
-
-      - name: DATA_SOURCE
-        tests:
-          - not_null
+    - not_null
+  - name: RES_ID
+    tests:
+    - not_null
+  - name: DATA_SOURCE
+    tests:
+    - not_null

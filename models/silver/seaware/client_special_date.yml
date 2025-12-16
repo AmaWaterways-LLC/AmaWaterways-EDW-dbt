@@ -1,71 +1,80 @@
 models:
-  - name: client_special_date
-    description: >
-      This model represents a standardized view of client special dates across multiple source systems, including SW1 and SW2. 
-      The data from these systems may differ due to variations in data entry, processing, or timing. 
-      This model is used downstream to provide a unified understanding of client special dates, enabling accurate reporting, metrics, and auditability. 
-      Key analytical use cases include analyzing client behavior, tracking special date trends, and ensuring data consistency across systems.
+- name: client_special_date
+  description: 'This model represents a standardized view of client special dates
+    across multiple source systems, including SW1 and SW2.  The data from these systems
+    may differ due to variations in data entry, processing, or timing.  This model
+    is used downstream to provide a unified understanding of client special dates,
+    enabling accurate reporting, metrics, and auditability.  Key analytical use cases
+    include analyzing client behavior, tracking special date trends, and ensuring
+    data consistency across systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - CLIENT_SPECIAL_DATE_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: CLIENT_SPECIAL_DATE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of CLIENT_SPECIAL_DATE_ID
+      and DATA_SOURCE.  This key ensures row uniqueness and facilitates efficient
+      data retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the client special date data originates,
+      either SW1 or SW2.  This column is used to track data provenance and identify
+      potential discrepancies between systems.
+
+      '
+  - name: CLIENT_ID
+    description: 'The unique identifier for the client associated with the special
+      date.  This column is used to link client special dates to other client-related
+      data.
+
+      '
+  - name: SEQ_NUMBER
+    description: 'A sequence number assigned to the special date, potentially indicating
+      the order or priority of the date.  This column is used to analyze the sequence
+      of special dates for a given client.
+
+      '
+  - name: SPECIAL_DATE_TYPE
+    description: 'The type of special date, such as a birthday or anniversary.  This
+      column is used to categorize and analyze client special dates by type.
+
+      '
+  - name: SPECIAL_DATE
+    description: 'The actual date of the special event.  This column is used to track
+      and analyze client special dates over time.
+
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the special date.  This
+      column is used to capture any relevant context or information about the special
+      date.
+
+      '
+  - name: CLIENT_SPECIAL_DATE_ID
+    description: 'The unique identifier for the client special date.  This column,
+      in combination with DATA_SOURCE, forms the primary key for this model.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CLIENT_SPECIAL_DATE_ID
-            - DATA_SOURCE
+    - not_null
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the client special date data was last updated.  This
+      column is used to track data freshness and identify potential issues with data
+      synchronization.
 
-    columns:
-      - name: CLIENT_SPECIAL_DATE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of CLIENT_SPECIAL_DATE_ID and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates efficient data retrieval.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the client special date data originates, either SW1 or SW2. 
-          This column is used to track data provenance and identify potential discrepancies between systems.
-
-      - name: CLIENT_ID
-        description: >
-          The unique identifier for the client associated with the special date. 
-          This column is used to link client special dates to other client-related data.
-
-      - name: SEQ_NUMBER
-        description: >
-          A sequence number assigned to the special date, potentially indicating the order or priority of the date. 
-          This column is used to analyze the sequence of special dates for a given client.
-
-      - name: SPECIAL_DATE_TYPE
-        description: >
-          The type of special date, such as a birthday or anniversary. 
-          This column is used to categorize and analyze client special dates by type.
-
-      - name: SPECIAL_DATE
-        description: >
-          The actual date of the special event. 
-          This column is used to track and analyze client special dates over time.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the special date. 
-          This column is used to capture any relevant context or information about the special date.
-
-      - name: CLIENT_SPECIAL_DATE_ID
-        description: >
-          The unique identifier for the client special date. 
-          This column, in combination with DATA_SOURCE, forms the primary key for this model.
-        tests:
-          - not_null
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the client special date data was last updated. 
-          This column is used to track data freshness and identify potential issues with data synchronization.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the client special date data has been deleted in the source system. 
-          This column is used to track data lineage and identify potential data inconsistencies.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the client special date data has been deleted
+      in the source system.  This column is used to track data lineage and identify
+      potential data inconsistencies.

@@ -1,60 +1,73 @@
 models:
-  - name: invoice_item_group
-    description: >
-      The invoice_item_group model represents a standardized view of invoice item groups across multiple source systems, including SW1 and SW2. This model is used to consolidate and harmonize data from these systems, enabling downstream analytics and reporting. The data from multiple systems may differ due to variations in data formatting, encoding, and business rules. This model is critical for financial reporting, auditability, and metrics analysis.
+- name: invoice_item_group
+  description: 'The invoice_item_group model represents a standardized view of invoice
+    item groups across multiple source systems, including SW1 and SW2. This model
+    is used to consolidate and harmonize data from these systems, enabling downstream
+    analytics and reporting. The data from multiple systems may differ due to variations
+    in data formatting, encoding, and business rules. This model is critical for financial
+    reporting, auditability, and metrics analysis.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - INV_ITEM_GROUP
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INVOICE_ITEM_GROUP_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of INV_ITEM_GROUP
+      and DATA_SOURCE. This key ensures row uniqueness and facilitates efficient data
+      retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system identifier, either SW1 or SW2, indicating the
+      origin of the invoice item group data.
+
+      '
+  - name: INV_ITEM_GROUP
+    description: 'The invoice item group identifier, representing a grouping of related
+      invoice items.
+
+      '
+  - name: INV_ITEM_GROUP_ID
+    description: 'A numeric identifier for the invoice item group, used for reference
+      and analysis.
+
+      '
+  - name: COMMENTS
+    description: 'Free-form comments associated with the invoice item group, providing
+      additional context.
+
+      '
+  - name: SORT_SEQN
+    description: 'A numeric sequence number used for sorting and ordering invoice
+      item groups.
+
+      '
+  - name: APPLY_TO_FIRST_GUEST
+    description: 'A flag indicating whether the invoice item group applies to the
+      first guest.
+
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the invoice item group data.
+
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the invoice item group has been deleted
+      in the source system.
+
+      '
+  - name: INV_ITEM_GROUP
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - INV_ITEM_GROUP
-            - DATA_SOURCE
-
-    columns:
-      - name: INVOICE_ITEM_GROUP_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of INV_ITEM_GROUP and DATA_SOURCE. This key ensures row uniqueness and facilitates efficient data retrieval.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system identifier, either SW1 or SW2, indicating the origin of the invoice item group data.
-
-      - name: INV_ITEM_GROUP
-        description: >
-          The invoice item group identifier, representing a grouping of related invoice items.
-
-      - name: INV_ITEM_GROUP_ID
-        description: >
-          A numeric identifier for the invoice item group, used for reference and analysis.
-
-      - name: COMMENTS
-        description: >
-          Free-form comments associated with the invoice item group, providing additional context.
-
-      - name: SORT_SEQN
-        description: >
-          A numeric sequence number used for sorting and ordering invoice item groups.
-
-      - name: APPLY_TO_FIRST_GUEST
-        description: >
-          A flag indicating whether the invoice item group applies to the first guest.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the invoice item group data.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the invoice item group has been deleted in the source system.
-
-      - name: INV_ITEM_GROUP
-        tests:
-          - not_null
-
-      - name: DATA_SOURCE
-        tests:
-          - not_null
+    - not_null
+  - name: DATA_SOURCE
+    tests:
+    - not_null

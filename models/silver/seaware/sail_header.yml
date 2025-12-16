@@ -1,125 +1,129 @@
 models:
-  - name: sail_header
-    description: >
-      The sail_header model represents a unified view of sail header data from multiple systems, 
-      including SW1 and SW2. This model is used to standardize sail header data and provide a 
-      single source of truth for downstream analytics and reporting. The data from multiple 
-      systems may differ due to differences in data collection and processing methods. This 
-      model is critical for reporting, metrics, and auditability.
+- name: sail_header
+  description: 'The sail_header model represents a unified view of sail header data
+    from multiple systems,  including SW1 and SW2. This model is used to standardize
+    sail header data and provide a  single source of truth for downstream analytics
+    and reporting. The data from multiple  systems may differ due to differences in
+    data collection and processing methods. This  model is critical for reporting,
+    metrics, and auditability.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - SAIL_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: SAIL_HEADER_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of SAIL_ID
+      and DATA_SOURCE.  This key is used to uniquely identify each sail header record.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the sail header data, either SW1 or SW2. This
+      column is used  to track the origin of the data and to identify any differences
+      between the two systems.
+
+      '
+  - name: SAIL_ID
+    description: 'A unique identifier for the sail header record. This column, in
+      combination with  DATA_SOURCE, forms the primary key of the table.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - SAIL_ID
-            - DATA_SOURCE
+    - not_null
+  - name: SHIP_CODE
+    description: 'The code of the ship associated with the sail header record.
 
-    columns:
-      - name: SAIL_HEADER_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of SAIL_ID and DATA_SOURCE. 
-          This key is used to uniquely identify each sail header record.
+      '
+  - name: SAIL_DATE_FROM
+    description: 'The start date of the sail period.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the sail header data, either SW1 or SW2. This column is used 
-          to track the origin of the data and to identify any differences between the two systems.
+      '
+  - name: SAIL_DATE_TO
+    description: 'The end date of the sail period.
 
-      - name: SAIL_ID
-        description: >
-          A unique identifier for the sail header record. This column, in combination with 
-          DATA_SOURCE, forms the primary key of the table.
-        tests:
-          - not_null
+      '
+  - name: REL_DAY_FROM
+    description: 'The relative day from which the sail period starts.
 
-      - name: SHIP_CODE
-        description: >
-          The code of the ship associated with the sail header record.
+      '
+  - name: REL_DAY_TO
+    description: 'The relative day to which the sail period ends.
 
-      - name: SAIL_DATE_FROM
-        description: >
-          The start date of the sail period.
+      '
+  - name: SEASON_CODE
+    description: 'The code of the season associated with the sail header record.
 
-      - name: SAIL_DATE_TO
-        description: >
-          The end date of the sail period.
+      '
+  - name: PORT_FROM
+    description: 'The port of departure for the sail.
 
-      - name: REL_DAY_FROM
-        description: >
-          The relative day from which the sail period starts.
+      '
+  - name: PORT_TO
+    description: 'The port of arrival for the sail.
 
-      - name: REL_DAY_TO
-        description: >
-          The relative day to which the sail period ends.
+      '
+  - name: GEOG_AREA_CODE
+    description: 'The geographic area code associated with the sail header record.
 
-      - name: SEASON_CODE
-        description: >
-          The code of the season associated with the sail header record.
+      '
+  - name: IS_FAKE
+    description: 'A flag indicating whether the sail header record is fake or not.
 
-      - name: PORT_FROM
-        description: >
-          The port of departure for the sail.
+      '
+  - name: IS_ACTIVE
+    description: 'A flag indicating whether the sail header record is active or not.
 
-      - name: PORT_TO
-        description: >
-          The port of arrival for the sail.
+      '
+  - name: COMMENTS
+    description: 'Any additional comments or notes associated with the sail header
+      record.
 
-      - name: GEOG_AREA_CODE
-        description: >
-          The geographic area code associated with the sail header record.
+      '
+  - name: SAIL_STATUS
+    description: 'The status of the sail header record.
 
-      - name: IS_FAKE
-        description: >
-          A flag indicating whether the sail header record is fake or not.
+      '
+  - name: SAIL_CODE
+    description: 'The code of the sail associated with the sail header record.
 
-      - name: IS_ACTIVE
-        description: >
-          A flag indicating whether the sail header record is active or not.
+      '
+  - name: DEP_REF_ID
+    description: 'The departure reference ID associated with the sail header record.
 
-      - name: COMMENTS
-        description: >
-          Any additional comments or notes associated with the sail header record.
+      '
+  - name: ARR_REF_ID
+    description: 'The arrival reference ID associated with the sail header record.
 
-      - name: SAIL_STATUS
-        description: >
-          The status of the sail header record.
+      '
+  - name: ROUTE_CODE
+    description: 'The code of the route associated with the sail header record.
 
-      - name: SAIL_CODE
-        description: >
-          The code of the sail associated with the sail header record.
+      '
+  - name: IS_LOCKED
+    description: 'A flag indicating whether the sail header record is locked or not.
 
-      - name: DEP_REF_ID
-        description: >
-          The departure reference ID associated with the sail header record.
+      '
+  - name: INV_MODE_RESERVED_ONLY
+    description: 'A flag indicating whether the sail header record is reserved only
+      for inventory mode.
 
-      - name: ARR_REF_ID
-        description: >
-          The arrival reference ID associated with the sail header record.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the sail header record.
 
-      - name: ROUTE_CODE
-        description: >
-          The code of the route associated with the sail header record.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the sail header record has been deleted
+      in the source system.
 
-      - name: IS_LOCKED
-        description: >
-          A flag indicating whether the sail header record is locked or not.
-
-      - name: INV_MODE_RESERVED_ONLY
-        description: >
-          A flag indicating whether the sail header record is reserved only for inventory mode.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the sail header record.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the sail header record has been deleted in the source system.
-
-      - name: TC_PREPROC_AT
-        description: >
-          The timestamp of the pre-processing of the sail header record.
+      '
+  - name: TC_PREPROC_AT
+    description: The timestamp of the pre-processing of the sail header record.

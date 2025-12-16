@@ -1,114 +1,122 @@
 models:
-  - name: am_order_item
-    description: >
-      The am_order_item model represents individual items within orders in the enterprise domain. 
-      Data from multiple systems may differ due to variations in data entry, processing, or timing. 
-      This standardized model is used downstream for reporting, analytics, and auditing purposes, 
-      providing a unified view of order items across different data sources. 
-      Key analytical use cases include tracking order item quantities, delivery dates, and amenity codes.
+- name: am_order_item
+  description: 'The am_order_item model represents individual items within orders
+    in the enterprise domain.  Data from multiple systems may differ due to variations
+    in data entry, processing, or timing.  This standardized model is used downstream
+    for reporting, analytics, and auditing purposes,  providing a unified view of
+    order items across different data sources.  Key analytical use cases include tracking
+    order item quantities, delivery dates, and amenity codes.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - AM_ORD_ITEM_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: AM_ORDER_ITEM_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of AM_ORD_ITEM_ID
+      and DATA_SOURCE.  This key ensures row uniqueness and facilitates efficient
+      data retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the order item data originated.  This
+      column helps track data provenance and identify potential discrepancies between
+      sources.
+
+      '
+  - name: AM_ORD_ITEM_ID
+    description: 'The unique identifier for the order item.  This column, in conjunction
+      with DATA_SOURCE, forms the primary key for the model.  It plays a crucial role
+      in maintaining data integrity and supporting analytical use cases.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - AM_ORD_ITEM_ID
-            - DATA_SOURCE
+    - not_null
+  - name: AM_ORDER_ID
+    description: 'The identifier for the parent order.  This column enables linking
+      order items to their corresponding orders,  facilitating analysis of order composition
+      and item-level details.
 
-    columns:
-      - name: AM_ORDER_ITEM_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of AM_ORD_ITEM_ID and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates efficient data retrieval.
+      '
+  - name: AMENITY_CODE
+    description: 'A code representing the type of amenity associated with the order
+      item.  This column supports analysis of amenity usage and preferences.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the order item data originated. 
-          This column helps track data provenance and identify potential discrepancies between sources.
+      '
+  - name: AM_PLACE_CODE
+    description: 'A code indicating the location or place where the order item is
+      delivered or provided.  This column helps analyze delivery patterns and location-specific
+      trends.
 
-      - name: AM_ORD_ITEM_ID
-        description: >
-          The unique identifier for the order item. 
-          This column, in conjunction with DATA_SOURCE, forms the primary key for the model. 
-          It plays a crucial role in maintaining data integrity and supporting analytical use cases.
-        tests:
-          - not_null
+      '
+  - name: AM_DELVR_TYPE
+    description: 'The type of delivery or fulfillment method used for the order item.  This
+      column enables analysis of delivery preferences and logistical operations.
 
-      - name: AM_ORDER_ID
-        description: >
-          The identifier for the parent order. 
-          This column enables linking order items to their corresponding orders, 
-          facilitating analysis of order composition and item-level details.
+      '
+  - name: DELIVERY_DATE
+    description: 'The date on which the order item is scheduled for delivery.  This
+      column supports analysis of delivery timelines and scheduling efficiency.
 
-      - name: AMENITY_CODE
-        description: >
-          A code representing the type of amenity associated with the order item. 
-          This column supports analysis of amenity usage and preferences.
+      '
+  - name: QUANTITY
+    description: 'The number of units of the order item.  This column is essential
+      for tracking inventory, managing stock levels, and analyzing sales volume.
 
-      - name: AM_PLACE_CODE
-        description: >
-          A code indicating the location or place where the order item is delivered or provided. 
-          This column helps analyze delivery patterns and location-specific trends.
+      '
+  - name: COMMENTS
+    description: 'Additional notes or comments related to the order item.  This column
+      provides context and supplementary information for analytical purposes.
 
-      - name: AM_DELVR_TYPE
-        description: >
-          The type of delivery or fulfillment method used for the order item. 
-          This column enables analysis of delivery preferences and logistical operations.
+      '
+  - name: AMENITY_SUBCODE
+    description: 'A subcode that further categorizes the amenity associated with the
+      order item.  This column enables more granular analysis of amenity usage and
+      preferences.
 
-      - name: DELIVERY_DATE
-        description: >
-          The date on which the order item is scheduled for delivery. 
-          This column supports analysis of delivery timelines and scheduling efficiency.
+      '
+  - name: FOR_ALL
+    description: 'A flag indicating whether the order item is applicable to all entities
+      or individuals.  This column supports analysis of order item scope and applicability.
 
-      - name: QUANTITY
-        description: >
-          The number of units of the order item. 
-          This column is essential for tracking inventory, managing stock levels, and analyzing sales volume.
+      '
+  - name: GUEST_ID
+    description: 'The identifier for the guest or customer associated with the order
+      item.  This column enables linking order items to specific guests, facilitating
+      analysis of guest behavior and preferences.
 
-      - name: COMMENTS
-        description: >
-          Additional notes or comments related to the order item. 
-          This column provides context and supplementary information for analytical purposes.
+      '
+  - name: ITEM_DELIVERY_DAY
+    description: 'The day of the week on which the order item is scheduled for delivery.  This
+      column supports analysis of delivery patterns and scheduling efficiency.
 
-      - name: AMENITY_SUBCODE
-        description: >
-          A subcode that further categorizes the amenity associated with the order item. 
-          This column enables more granular analysis of amenity usage and preferences.
+      '
+  - name: ITEM_DELIVERY_TIME
+    description: 'The time at which the order item is scheduled for delivery.  This
+      column enables analysis of delivery timelines and scheduling efficiency.
 
-      - name: FOR_ALL
-        description: >
-          A flag indicating whether the order item is applicable to all entities or individuals. 
-          This column supports analysis of order item scope and applicability.
+      '
+  - name: DAY_DELIVERY_BASIS
+    description: 'The basis or criteria used to determine the delivery day for the
+      order item.  This column provides context for understanding delivery scheduling
+      and logistics.
 
-      - name: GUEST_ID
-        description: >
-          The identifier for the guest or customer associated with the order item. 
-          This column enables linking order items to specific guests, facilitating analysis of guest behavior and preferences.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the order item has been deleted in the
+      source system.  This column helps track data consistency and identify potential
+      discrepancies between sources.
 
-      - name: ITEM_DELIVERY_DAY
-        description: >
-          The day of the week on which the order item is scheduled for delivery. 
-          This column supports analysis of delivery patterns and scheduling efficiency.
-
-      - name: ITEM_DELIVERY_TIME
-        description: >
-          The time at which the order item is scheduled for delivery. 
-          This column enables analysis of delivery timelines and scheduling efficiency.
-
-      - name: DAY_DELIVERY_BASIS
-        description: >
-          The basis or criteria used to determine the delivery day for the order item. 
-          This column provides context for understanding delivery scheduling and logistics.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the order item has been deleted in the source system. 
-          This column helps track data consistency and identify potential discrepancies between sources.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the order item data was last updated. 
-          This column supports analysis of data freshness and helps identify potential data staleness issues.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp when the order item data was last updated.  This column
+      supports analysis of data freshness and helps identify potential data staleness
+      issues.

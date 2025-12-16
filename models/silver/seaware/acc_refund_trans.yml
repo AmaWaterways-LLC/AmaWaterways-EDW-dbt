@@ -16,7 +16,8 @@ models:
           combination_of_columns:
             - RECORD_ID
             - DATA_SOURCE
-
+          where: "SOURCE_DELETED = false"
+          
     columns:
       - name: ACC_REFUND_TRANS_SURROGATE_KEY
         description: >

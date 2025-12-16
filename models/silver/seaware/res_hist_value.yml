@@ -1,70 +1,91 @@
 models:
-  - name: res_hist_value
-    description: >
-      This model represents the standardized historical values of resources from multiple systems. The data from different systems may differ due to variations in data formatting, processing, and timing. This model is used downstream to provide a unified view of resource historical values, enabling accurate reporting, metrics, and auditability. Key analytical use cases include tracking changes to resource values over time, identifying data discrepancies between systems, and performing data quality checks.
+- name: res_hist_value
+  description: 'This model represents the standardized historical values of resources
+    from multiple systems. The data from different systems may differ due to variations
+    in data formatting, processing, and timing. This model is used downstream to provide
+    a unified view of resource historical values, enabling accurate reporting, metrics,
+    and auditability. Key analytical use cases include tracking changes to resource
+    values over time, identifying data discrepancies between systems, and performing
+    data quality checks.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - TREE_NODE_ID
+      - TRANS_ID
+      - ACTION
+      - IT_IS_PARM
+      - FIELD_ID
+      - FIELD_VALUE_OLD
+      - FIELD_VALUE_NEW
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: RES_HIST_VALUE_SURROGATE_KEY
+    description: 'A unique surrogate key generated for table compatibility, ensuring
+      each row can be uniquely identified. This key is a composite of TREE_NODE_ID,
+      TRANS_ID, ACTION, IT_IS_PARM, FIELD_ID, FIELD_VALUE_OLD, FIELD_VALUE_NEW, and
+      DATA_SOURCE.
+
+      '
+  - name: TREE_NODE_ID
+    description: 'A unique identifier for the tree node, representing a specific resource
+      or entity. This column plays a crucial role in row uniqueness and is used to
+      track changes to resource values over time.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TREE_NODE_ID
-            - TRANS_ID
-            - ACTION
-            - IT_IS_PARM
-            - FIELD_ID
-            - FIELD_VALUE_OLD
-            - FIELD_VALUE_NEW
-            - DATA_SOURCE
+    - not_null
+  - name: TRANS_ID
+    description: 'A unique identifier for the transaction, representing a specific
+      event or action. This column is used to track changes to resource values and
+      is a key component of the surrogate key.
 
-    columns:
-      - name: RES_HIST_VALUE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated for table compatibility, ensuring each row can be uniquely identified. This key is a composite of TREE_NODE_ID, TRANS_ID, ACTION, IT_IS_PARM, FIELD_ID, FIELD_VALUE_OLD, FIELD_VALUE_NEW, and DATA_SOURCE.
+      '
+    tests:
+    - not_null
+  - name: ACTION
+    description: 'The action taken on the resource, such as create, update, or delete.
+      This column provides context for the changes made to the resource values.
 
-      - name: TREE_NODE_ID
-        description: >
-          A unique identifier for the tree node, representing a specific resource or entity. This column plays a crucial role in row uniqueness and is used to track changes to resource values over time.
-        tests:
-          - not_null
+      '
+  - name: IT_IS_PARM
+    description: 'A parameter indicating whether the field is a parameter or not.
+      This column is used to provide additional context for the field values.
 
-      - name: TRANS_ID
-        description: >
-          A unique identifier for the transaction, representing a specific event or action. This column is used to track changes to resource values and is a key component of the surrogate key.
-        tests:
-          - not_null
+      '
+  - name: FIELD_ID
+    description: 'A unique identifier for the field, representing a specific attribute
+      or property. This column is used to track changes to specific field values over
+      time.
 
-      - name: ACTION
-        description: >
-          The action taken on the resource, such as create, update, or delete. This column provides context for the changes made to the resource values.
+      '
+  - name: FIELD_VALUE_OLD
+    description: 'The previous value of the field, used to track changes to the resource
+      values over time.
 
-      - name: IT_IS_PARM
-        description: >
-          A parameter indicating whether the field is a parameter or not. This column is used to provide additional context for the field values.
+      '
+  - name: FIELD_VALUE_NEW
+    description: 'The new value of the field, used to track changes to the resource
+      values over time.
 
-      - name: FIELD_ID
-        description: >
-          A unique identifier for the field, representing a specific attribute or property. This column is used to track changes to specific field values over time.
+      '
+  - name: DATA_SOURCE
+    description: 'The source system or application that provided the data, used to
+      identify potential data discrepancies between systems.
 
-      - name: FIELD_VALUE_OLD
-        description: >
-          The previous value of the field, used to track changes to the resource values over time.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the record has been deleted in the source
+      system, used for data quality checks and auditing.
 
-      - name: FIELD_VALUE_NEW
-        description: >
-          The new value of the field, used to track changes to the resource values over time.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system or application that provided the data, used to identify potential data discrepancies between systems.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the record has been deleted in the source system, used for data quality checks and auditing.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the record was last updated, used for data freshness and auditing purposes.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp when the record was last updated, used for data freshness
+      and auditing purposes.

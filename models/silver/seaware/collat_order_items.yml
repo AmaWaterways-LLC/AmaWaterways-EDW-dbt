@@ -1,59 +1,67 @@
 models:
-  - name: collat_order_items
-    description: >
-      This model represents collated order items from multiple source systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data entry, processing, or timing. 
-      This standardized model is used downstream for reporting, analytics, and auditing purposes, 
-      providing a unified view of order items across the enterprise. 
-      Key analytical use cases include tracking order item quantities, analyzing comments, and monitoring data source discrepancies.
+- name: collat_order_items
+  description: 'This model represents collated order items from multiple source systems,
+    SW1 and SW2.  The data from these systems may differ due to differences in data
+    entry, processing, or timing.  This standardized model is used downstream for
+    reporting, analytics, and auditing purposes,  providing a unified view of order
+    items across the enterprise.  Key analytical use cases include tracking order
+    item quantities, analyzing comments, and monitoring data source discrepancies.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - ITEM_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: COLLAT_ORDER_ITEMS_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of ITEM_ID
+      and DATA_SOURCE,  ensuring row uniqueness across the collated data set.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system identifier, either SW1 or SW2, indicating the
+      origin of the order item data.
+
+      '
+  - name: ITEM_ID
+    description: 'The unique identifier for the order item, used in combination with
+      DATA_SOURCE to ensure row uniqueness.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - ITEM_ID
-            - DATA_SOURCE
+    - not_null
+  - name: ORDER_ID
+    description: 'The identifier for the parent order, linking the order item to its
+      corresponding order.
 
-    columns:
-      - name: COLLAT_ORDER_ITEMS_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of ITEM_ID and DATA_SOURCE, 
-          ensuring row uniqueness across the collated data set.
+      '
+  - name: COLLAT_CODE
+    description: 'A code associated with the order item, potentially used for categorization
+      or tracking purposes.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system identifier, either SW1 or SW2, indicating the origin of the order item data.
+      '
+  - name: ITEM_QTY
+    description: 'The quantity of the order item, which may be used for inventory
+      management or sales analysis.
 
-      - name: ITEM_ID
-        description: >
-          The unique identifier for the order item, used in combination with DATA_SOURCE to ensure row uniqueness.
-        tests:
-          - not_null
+      '
+  - name: COMMENTS
+    description: 'Free-form text comments associated with the order item, potentially
+      used for customer feedback or issue tracking.
 
-      - name: ORDER_ID
-        description: >
-          The identifier for the parent order, linking the order item to its corresponding order.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the order item was last updated in the source
+      system, used for data freshness and auditing purposes.
 
-      - name: COLLAT_CODE
-        description: >
-          A code associated with the order item, potentially used for categorization or tracking purposes.
-
-      - name: ITEM_QTY
-        description: >
-          The quantity of the order item, which may be used for inventory management or sales analysis.
-
-      - name: COMMENTS
-        description: >
-          Free-form text comments associated with the order item, potentially used for customer feedback or issue tracking.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the order item was last updated in the source system, used for data freshness and auditing purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the order item was deleted in the source system, used for data consistency and integrity purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the order item was deleted in the source
+      system, used for data consistency and integrity purposes.

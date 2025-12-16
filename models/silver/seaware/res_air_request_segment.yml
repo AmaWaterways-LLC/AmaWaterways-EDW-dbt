@@ -1,146 +1,146 @@
 models:
-  - name: res_air_request_segment
-    description: >
-      This model represents air request segments in the enterprise domain, 
-      providing a standardized view of flight segment data from multiple systems. 
-      Data from different systems may differ due to variations in data collection 
-      and processing methods. This model is used downstream for reporting, metrics, 
-      and auditability, enabling analysis of flight segment data across systems.
+- name: res_air_request_segment
+  description: 'This model represents air request segments in the enterprise domain,  providing
+    a standardized view of flight segment data from multiple systems.  Data from different
+    systems may differ due to variations in data collection  and processing methods.
+    This model is used downstream for reporting, metrics,  and auditability, enabling
+    analysis of flight segment data across systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RTG_SEGMENT_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: RES_AIR_REQUEST_SEGMENT_SURROGATE_KEY
+    description: 'A unique surrogate key generated from RTG_SEGMENT_ID and DATA_SOURCE,  ensuring
+      row uniqueness and facilitating data integration.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the air request segment data,  used to track
+      data origin and enable system-specific analysis.
+
+      '
+  - name: RTG_SEGMENT_ID
+    description: 'A unique identifier for the air request segment,  used in combination
+      with DATA_SOURCE to ensure row uniqueness.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RTG_SEGMENT_ID
-            - DATA_SOURCE
+    - not_null
+  - name: AIR_REQUEST_ID
+    description: 'The identifier of the air request associated with the segment,  enabling
+      analysis of request-specific data.
 
-    columns:
-      - name: RES_AIR_REQUEST_SEGMENT_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from RTG_SEGMENT_ID and DATA_SOURCE, 
-          ensuring row uniqueness and facilitating data integration.
+      '
+  - name: SEGMENT_SEQN
+    description: 'The sequence number of the segment within the air request,  providing
+      context for segment-specific analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the air request segment data, 
-          used to track data origin and enable system-specific analysis.
+      '
+  - name: DIRECTION
+    description: 'The direction of the flight segment (e.g., outbound or return),  used
+      for analysis of flight patterns and trends.
 
-      - name: RTG_SEGMENT_ID
-        description: >
-          A unique identifier for the air request segment, 
-          used in combination with DATA_SOURCE to ensure row uniqueness.
-        tests:
-          - not_null
+      '
+  - name: CARRIER_CODE
+    description: 'The code of the airline carrier operating the flight segment,  enabling
+      analysis of carrier-specific data.
 
-      - name: AIR_REQUEST_ID
-        description: >
-          The identifier of the air request associated with the segment, 
-          enabling analysis of request-specific data.
+      '
+  - name: FLIGHT
+    description: 'The flight number of the segment, used for analysis of flight-specific
+      data.
 
-      - name: SEGMENT_SEQN
-        description: >
-          The sequence number of the segment within the air request, 
-          providing context for segment-specific analysis.
+      '
+  - name: AIRPORT_FROM
+    description: 'The departure airport of the flight segment,  used for analysis
+      of airport-specific data.
 
-      - name: DIRECTION
-        description: >
-          The direction of the flight segment (e.g., outbound or return), 
-          used for analysis of flight patterns and trends.
+      '
+  - name: AIRPORT_TO
+    description: 'The arrival airport of the flight segment,  used for analysis of
+      airport-specific data.
 
-      - name: CARRIER_CODE
-        description: >
-          The code of the airline carrier operating the flight segment, 
-          enabling analysis of carrier-specific data.
+      '
+  - name: DEPARTURE_DATE
+    description: 'The date of departure for the flight segment,  used for analysis
+      of time-based trends.
 
-      - name: FLIGHT
-        description: >
-          The flight number of the segment, used for analysis of flight-specific data.
+      '
+  - name: DEPARTURE_TIME
+    description: 'The scheduled departure time of the flight segment,  used for analysis
+      of time-based trends.
 
-      - name: AIRPORT_FROM
-        description: >
-          The departure airport of the flight segment, 
-          used for analysis of airport-specific data.
+      '
+  - name: DEPARTURE_BEST_TIME
+    description: 'The best estimated departure time of the flight segment,  used for
+      analysis of time-based trends.
 
-      - name: AIRPORT_TO
-        description: >
-          The arrival airport of the flight segment, 
-          used for analysis of airport-specific data.
+      '
+  - name: DEPARTURE_EARLIEST_TIME
+    description: 'The earliest possible departure time of the flight segment,  used
+      for analysis of time-based trends.
 
-      - name: DEPARTURE_DATE
-        description: >
-          The date of departure for the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: DEPARTURE_LATEST_TIME
+    description: 'The latest possible departure time of the flight segment,  used
+      for analysis of time-based trends.
 
-      - name: DEPARTURE_TIME
-        description: >
-          The scheduled departure time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: ARRIVAL_DATE
+    description: 'The date of arrival for the flight segment,  used for analysis of
+      time-based trends.
 
-      - name: DEPARTURE_BEST_TIME
-        description: >
-          The best estimated departure time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: ARRIVAL_TIME
+    description: 'The scheduled arrival time of the flight segment,  used for analysis
+      of time-based trends.
 
-      - name: DEPARTURE_EARLIEST_TIME
-        description: >
-          The earliest possible departure time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: ARRIVAL_BEST_TIME
+    description: 'The best estimated arrival time of the flight segment,  used for
+      analysis of time-based trends.
 
-      - name: DEPARTURE_LATEST_TIME
-        description: >
-          The latest possible departure time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: ARRIVAL_EARLIEST_TIME
+    description: 'The earliest possible arrival time of the flight segment,  used
+      for analysis of time-based trends.
 
-      - name: ARRIVAL_DATE
-        description: >
-          The date of arrival for the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: ARRIVAL_LATEST_TIME
+    description: 'The latest possible arrival time of the flight segment,  used for
+      analysis of time-based trends.
 
-      - name: ARRIVAL_TIME
-        description: >
-          The scheduled arrival time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: CHARTER_FLIGHT
+    description: 'An indicator of whether the flight segment is a charter flight,  used
+      for analysis of charter flight trends.
 
-      - name: ARRIVAL_BEST_TIME
-        description: >
-          The best estimated arrival time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: QUEUED_REQUEST_ID
+    description: 'The identifier of the queued request associated with the segment,  enabling
+      analysis of request-specific data.
 
-      - name: ARRIVAL_EARLIEST_TIME
-        description: >
-          The earliest possible arrival time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: TIMING
+    description: 'The timing of the flight segment (e.g., morning, afternoon),  used
+      for analysis of time-based trends.
 
-      - name: ARRIVAL_LATEST_TIME
-        description: >
-          The latest possible arrival time of the flight segment, 
-          used for analysis of time-based trends.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the record has been deleted in the source
+      system,  used for data auditing and tracking.
 
-      - name: CHARTER_FLIGHT
-        description: >
-          An indicator of whether the flight segment is a charter flight, 
-          used for analysis of charter flight trends.
-
-      - name: QUEUED_REQUEST_ID
-        description: >
-          The identifier of the queued request associated with the segment, 
-          enabling analysis of request-specific data.
-
-      - name: TIMING
-        description: >
-          The timing of the flight segment (e.g., morning, afternoon), 
-          used for analysis of time-based trends.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the record has been deleted in the source system, 
-          used for data auditing and tracking.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the record, 
-          used for data auditing and tracking.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp of the last update to the record,  used for data auditing
+      and tracking.

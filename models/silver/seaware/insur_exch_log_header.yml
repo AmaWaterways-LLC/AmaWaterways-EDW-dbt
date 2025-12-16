@@ -1,78 +1,89 @@
 models:
-  - name: insur_exch_log_header
-    description: >
-      This model represents the standardized log header data from multiple insurance exchange systems, 
-      providing a unified view for analytics and reporting. The data from different systems may differ 
-      due to variations in data formatting and processing. This model is used downstream to analyze 
-      exchange trends, track data quality, and ensure auditability. Key analytical use cases include 
-      reporting on exchange volumes, monitoring data integrity, and identifying areas for process improvements.
+- name: insur_exch_log_header
+  description: 'This model represents the standardized log header data from multiple
+    insurance exchange systems,  providing a unified view for analytics and reporting.
+    The data from different systems may differ  due to variations in data formatting
+    and processing. This model is used downstream to analyze  exchange trends, track
+    data quality, and ensure auditability. Key analytical use cases include  reporting
+    on exchange volumes, monitoring data integrity, and identifying areas for process
+    improvements.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - LOG_HEADER_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INSUR_EXCH_LOG_HEADER_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of LOG_HEADER_ID
+      and DATA_SOURCE,  ensuring row uniqueness across multiple data sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system identifier, indicating the origin of the log header
+      data, such as ''SW1'' or ''SW2''.
+
+      '
+  - name: LOG_HEADER_ID
+    description: 'A unique identifier for the log header record, used in combination
+      with DATA_SOURCE to ensure  row uniqueness. This column plays a crucial role
+      in identifying specific log header records.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - LOG_HEADER_ID
-            - DATA_SOURCE
+    - not_null
+  - name: TIMESTAMP
+    description: 'The timestamp associated with the log header record, providing a
+      temporal context for the data.
 
-    columns:
-      - name: INSUR_EXCH_LOG_HEADER_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of LOG_HEADER_ID and DATA_SOURCE, 
-          ensuring row uniqueness across multiple data sources.
+      '
+  - name: EXCHANGE_TYPE
+    description: 'The type of exchange, categorizing the log header record by its
+      purpose or function.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system identifier, indicating the origin of the log header data, such as 'SW1' or 'SW2'.
+      '
+  - name: TOTAL_RECORDS
+    description: 'The total number of records processed, providing a quantitative
+      measure of the exchange volume.
 
-      - name: LOG_HEADER_ID
-        description: >
-          A unique identifier for the log header record, used in combination with DATA_SOURCE to ensure 
-          row uniqueness. This column plays a crucial role in identifying specific log header records.
+      '
+  - name: TOTAL_INVALID
+    description: 'The total number of invalid records, indicating the quality of the
+      data exchanged.
 
-        tests:
-          - not_null
+      '
+  - name: PATH_NAME
+    description: 'The path name associated with the log header record, providing additional
+      context for the data.
 
-      - name: TIMESTAMP
-        description: >
-          The timestamp associated with the log header record, providing a temporal context for the data.
+      '
+  - name: FILE_NAME
+    description: 'The file name associated with the log header record, further identifying
+      the exchanged data.
 
-      - name: EXCHANGE_TYPE
-        description: >
-          The type of exchange, categorizing the log header record by its purpose or function.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the log header record, offering
+      supplementary information.
 
-      - name: TOTAL_RECORDS
-        description: >
-          The total number of records processed, providing a quantitative measure of the exchange volume.
+      '
+  - name: TRANSMISSION_ID
+    description: 'A unique identifier for the transmission, applicable only to certain
+      data sources, such as ''SW2''.
 
-      - name: TOTAL_INVALID
-        description: >
-          The total number of invalid records, indicating the quality of the data exchanged.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp indicating when the log header record was last updated,
+      reflecting the data freshness.
 
-      - name: PATH_NAME
-        description: >
-          The path name associated with the log header record, providing additional context for the data.
-
-      - name: FILE_NAME
-        description: >
-          The file name associated with the log header record, further identifying the exchanged data.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the log header record, offering supplementary information.
-
-      - name: TRANSMISSION_ID
-        description: >
-          A unique identifier for the transmission, applicable only to certain data sources, such as 'SW2'.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp indicating when the log header record was last updated, reflecting the data freshness.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the log header record has been deleted in the source system, 
-          facilitating data synchronization and auditing.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the log header record has been deleted
+      in the source system,  facilitating data synchronization and auditing.

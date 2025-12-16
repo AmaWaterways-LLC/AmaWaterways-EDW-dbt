@@ -1,112 +1,117 @@
 models:
-  - name: group_pay_due_item
-    description: >
-      This model represents a standardized view of payment due items for groups across multiple systems. 
-      The data from multiple systems may differ due to varying data entry practices or system-specific nuances. 
-      This model is used downstream for reporting, metrics, and auditability purposes, providing a unified view of group payment due items. 
-      Key analytical use cases include tracking payment due dates, amounts, and activity types.
+- name: group_pay_due_item
+  description: 'This model represents a standardized view of payment due items for
+    groups across multiple systems.  The data from multiple systems may differ due
+    to varying data entry practices or system-specific nuances.  This model is used
+    downstream for reporting, metrics, and auditability purposes, providing a unified
+    view of group payment due items.  Key analytical use cases include tracking payment
+    due dates, amounts, and activity types.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: GROUP_PAY_DUE_ITEM_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns.  This key ensures row uniqueness across multiple systems.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the payment due item record, either ''SW1''
+      or ''SW2''.  This column is used to identify the origin of the data.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: RECORD_ID
+    description: 'The unique identifier of the payment due item record within its
+      source system.  This column, combined with DATA_SOURCE, ensures row uniqueness.
 
-    columns:
-      - name: GROUP_PAY_DUE_ITEM_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns. 
-          This key ensures row uniqueness across multiple systems.
+      '
+    tests:
+    - not_null
+  - name: GROUP_ID
+    description: 'The identifier of the group associated with the payment due item.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the payment due item record, either 'SW1' or 'SW2'. 
-          This column is used to identify the origin of the data.
+      '
+  - name: PMNT_DUE_ITEM_TYPE
+    description: 'The type of payment due item, such as a fee or charge.
 
-        tests:
-          - not_null
+      '
+  - name: DUE_DATE
+    description: 'The date by which the payment is due.
 
-      - name: RECORD_ID
-        description: >
-          The unique identifier of the payment due item record within its source system. 
-          This column, combined with DATA_SOURCE, ensures row uniqueness.
+      '
+  - name: GRACE_PERIOD
+    description: 'The number of days after the due date during which payment can still
+      be made without penalty.
 
-        tests:
-          - not_null
+      '
+  - name: AMOUNT
+    description: 'The amount of the payment due.
 
-      - name: GROUP_ID
-        description: >
-          The identifier of the group associated with the payment due item.
+      '
+  - name: ACTIVITY_TYPE
+    description: 'The type of activity associated with the payment due item, such
+      as a payment or adjustment.
 
-      - name: PMNT_DUE_ITEM_TYPE
-        description: >
-          The type of payment due item, such as a fee or charge.
+      '
+  - name: ACTIVITY_DATE
+    description: 'The date of the activity associated with the payment due item.
 
-      - name: DUE_DATE
-        description: >
-          The date by which the payment is due.
+      '
+  - name: ACTIVITY_EFFECTIVE_DATE
+    description: 'The date on which the activity associated with the payment due item
+      takes effect.
 
-      - name: GRACE_PERIOD
-        description: >
-          The number of days after the due date during which payment can still be made without penalty.
+      '
+  - name: ACTIVITY_INFO
+    description: 'Additional information about the activity associated with the payment
+      due item.
 
-      - name: AMOUNT
-        description: >
-          The amount of the payment due.
+      '
+  - name: DELEGATE_RES_ID
+    description: 'The identifier of the delegate responsible for the payment due item.
 
-      - name: ACTIVITY_TYPE
-        description: >
-          The type of activity associated with the payment due item, such as a payment or adjustment.
+      '
+  - name: CABIN_NUMBER
+    description: 'The cabin number associated with the payment due item.
 
-      - name: ACTIVITY_DATE
-        description: >
-          The date of the activity associated with the payment due item.
+      '
+  - name: IS_ADJUSTMENT
+    description: 'A flag indicating whether the payment due item is an adjustment.
 
-      - name: ACTIVITY_EFFECTIVE_DATE
-        description: >
-          The date on which the activity associated with the payment due item takes effect.
+      '
+  - name: CABIN_CATEGORY
+    description: 'The category of the cabin associated with the payment due item.
 
-      - name: ACTIVITY_INFO
-        description: >
-          Additional information about the activity associated with the payment due item.
+      '
+  - name: OCCUPANCY
+    description: 'The occupancy rate of the cabin associated with the payment due
+      item.
 
-      - name: DELEGATE_RES_ID
-        description: >
-          The identifier of the delegate responsible for the payment due item.
+      '
+  - name: SHIP_CODE
+    description: 'The code of the ship associated with the payment due item.
 
-      - name: CABIN_NUMBER
-        description: >
-          The cabin number associated with the payment due item.
+      '
+  - name: EXPIRATION_DATE
+    description: 'The date on which the payment due item expires.
 
-      - name: IS_ADJUSTMENT
-        description: >
-          A flag indicating whether the payment due item is an adjustment.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the payment due item record.
 
-      - name: CABIN_CATEGORY
-        description: >
-          The category of the cabin associated with the payment due item.
-
-      - name: OCCUPANCY
-        description: >
-          The occupancy rate of the cabin associated with the payment due item.
-
-      - name: SHIP_CODE
-        description: >
-          The code of the ship associated with the payment due item.
-
-      - name: EXPIRATION_DATE
-        description: >
-          The date on which the payment due item expires.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the payment due item record.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the payment due item record has been deleted in the source system.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the payment due item record has been deleted
+      in the source system.

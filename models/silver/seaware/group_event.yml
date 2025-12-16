@@ -1,142 +1,143 @@
 models:
-  - name: group_event
-    description: >
-      The group_event model represents a standardized view of group events across multiple systems, 
-      including SW1 and SW2. This model is used to track changes to group events, such as status updates, 
-      and provides a unified view for downstream analytics and reporting. The data from multiple systems 
-      may differ due to differences in data formatting and watermarking. This model is critical for 
-      providing accurate and up-to-date information on group events.
+- name: group_event
+  description: 'The group_event model represents a standardized view of group events
+    across multiple systems,  including SW1 and SW2. This model is used to track changes
+    to group events, such as status updates,  and provides a unified view for downstream
+    analytics and reporting. The data from multiple systems  may differ due to differences
+    in data formatting and watermarking. This model is critical for  providing accurate
+    and up-to-date information on group events.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: GROUP_EVENT_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns.  This key is used to uniquely identify each group event.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the group event data, either SW1 or SW2.  This
+      column is used to track the origin of the data.
+
+      '
+  - name: RECORD_ID
+    description: 'The unique identifier of the group event record in the source system.  This
+      column, combined with DATA_SOURCE, forms the primary key of the model.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: GROUP_EVENT_TYPE
+    description: 'The type of group event, such as a status update or a change to
+      the group''s ship code.  This column is used to categorize group events for
+      analytics and reporting.
 
-    columns:
-      - name: GROUP_EVENT_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns. 
-          This key is used to uniquely identify each group event.
+      '
+  - name: GROUP_ID
+    description: 'The unique identifier of the group associated with the group event.  This
+      column is used to link group events to their corresponding groups.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the group event data, either SW1 or SW2. 
-          This column is used to track the origin of the data.
+      '
+  - name: EVENT_TIMESTAMP
+    description: 'The timestamp of the group event.  This column is used to track
+      when group events occurred.
 
-      - name: RECORD_ID
-        description: >
-          The unique identifier of the group event record in the source system. 
-          This column, combined with DATA_SOURCE, forms the primary key of the model.
-        tests:
-          - not_null
+      '
+  - name: EVENT_DATE
+    description: 'The date of the group event.  This column is used to track when
+      group events occurred.
 
-      - name: GROUP_EVENT_TYPE
-        description: >
-          The type of group event, such as a status update or a change to the group's ship code. 
-          This column is used to categorize group events for analytics and reporting.
+      '
+  - name: OPERATOR_ID
+    description: 'The identifier of the operator who triggered the group event.  This
+      column is used to track who is responsible for group events.
 
-      - name: GROUP_ID
-        description: >
-          The unique identifier of the group associated with the group event. 
-          This column is used to link group events to their corresponding groups.
+      '
+  - name: OLD_STATUS
+    description: 'The previous status of the group before the group event.  This column
+      is used to track changes to group status.
 
-      - name: EVENT_TIMESTAMP
-        description: >
-          The timestamp of the group event. 
-          This column is used to track when group events occurred.
+      '
+  - name: NEW_STATUS
+    description: 'The new status of the group after the group event.  This column
+      is used to track changes to group status.
 
-      - name: EVENT_DATE
-        description: >
-          The date of the group event. 
-          This column is used to track when group events occurred.
+      '
+  - name: OLD_SHIP_CODE
+    description: 'The previous ship code of the group before the group event.  This
+      column is used to track changes to group ship codes.
 
-      - name: OPERATOR_ID
-        description: >
-          The identifier of the operator who triggered the group event. 
-          This column is used to track who is responsible for group events.
+      '
+  - name: OLD_SAIL_FROM
+    description: 'The previous sail from date of the group before the group event.  This
+      column is used to track changes to group sail dates.
 
-      - name: OLD_STATUS
-        description: >
-          The previous status of the group before the group event. 
-          This column is used to track changes to group status.
+      '
+  - name: OLD_SAIL_TO
+    description: 'The previous sail to date of the group before the group event.  This
+      column is used to track changes to group sail dates.
 
-      - name: NEW_STATUS
-        description: >
-          The new status of the group after the group event. 
-          This column is used to track changes to group status.
+      '
+  - name: NEW_SHIP_CODE
+    description: 'The new ship code of the group after the group event.  This column
+      is used to track changes to group ship codes.
 
-      - name: OLD_SHIP_CODE
-        description: >
-          The previous ship code of the group before the group event. 
-          This column is used to track changes to group ship codes.
+      '
+  - name: NEW_SAIL_FROM
+    description: 'The new sail from date of the group after the group event.  This
+      column is used to track changes to group sail dates.
 
-      - name: OLD_SAIL_FROM
-        description: >
-          The previous sail from date of the group before the group event. 
-          This column is used to track changes to group sail dates.
+      '
+  - name: NEW_SAIL_TO
+    description: 'The new sail to date of the group after the group event.  This column
+      is used to track changes to group sail dates.
 
-      - name: OLD_SAIL_TO
-        description: >
-          The previous sail to date of the group before the group event. 
-          This column is used to track changes to group sail dates.
+      '
+  - name: OLD_CABINS
+    description: 'The previous number of cabins of the group before the group event.  This
+      column is used to track changes to group cabin counts.
 
-      - name: NEW_SHIP_CODE
-        description: >
-          The new ship code of the group after the group event. 
-          This column is used to track changes to group ship codes.
+      '
+  - name: OLD_GUEST_COUNT
+    description: 'The previous number of guests of the group before the group event.  This
+      column is used to track changes to group guest counts.
 
-      - name: NEW_SAIL_FROM
-        description: >
-          The new sail from date of the group after the group event. 
-          This column is used to track changes to group sail dates.
+      '
+  - name: NEW_CABINS
+    description: 'The new number of cabins of the group after the group event.  This
+      column is used to track changes to group cabin counts.
 
-      - name: NEW_SAIL_TO
-        description: >
-          The new sail to date of the group after the group event. 
-          This column is used to track changes to group sail dates.
+      '
+  - name: NEW_GUEST_COUNT
+    description: 'The new number of guests of the group after the group event.  This
+      column is used to track changes to group guest counts.
 
-      - name: OLD_CABINS
-        description: >
-          The previous number of cabins of the group before the group event. 
-          This column is used to track changes to group cabin counts.
+      '
+  - name: OLD_PROBABILITY
+    description: 'The previous probability of the group before the group event.  This
+      column is used to track changes to group probabilities.
 
-      - name: OLD_GUEST_COUNT
-        description: >
-          The previous number of guests of the group before the group event. 
-          This column is used to track changes to group guest counts.
+      '
+  - name: NEW_PROBABILITY
+    description: 'The new probability of the group after the group event.  This column
+      is used to track changes to group probabilities.
 
-      - name: NEW_CABINS
-        description: >
-          The new number of cabins of the group after the group event. 
-          This column is used to track changes to group cabin counts.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the group event record.  This
+      column is used to track when group event records were last updated.
 
-      - name: NEW_GUEST_COUNT
-        description: >
-          The new number of guests of the group after the group event. 
-          This column is used to track changes to group guest counts.
-
-      - name: OLD_PROBABILITY
-        description: >
-          The previous probability of the group before the group event. 
-          This column is used to track changes to group probabilities.
-
-      - name: NEW_PROBABILITY
-        description: >
-          The new probability of the group after the group event. 
-          This column is used to track changes to group probabilities.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the group event record. 
-          This column is used to track when group event records were last updated.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the group event record has been deleted in the source system. 
-          This column is used to track deleted records.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the group event record has been deleted
+      in the source system.  This column is used to track deleted records.

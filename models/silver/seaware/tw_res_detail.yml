@@ -1,65 +1,67 @@
 models:
-  - name: tw_res_detail
-    description: >
-      The tw_res_detail model represents detailed reservation data from multiple systems, 
-      providing a standardized view for downstream analytics and reporting. 
-      Data from different systems may differ due to varying data entry practices or system-specific nuances. 
-      This model is used to generate reports on reservation status, track changes, and audit data consistency. 
-      Key analytical use cases include analyzing reservation trends, monitoring data quality, and identifying discrepancies between systems.
+- name: tw_res_detail
+  description: 'The tw_res_detail model represents detailed reservation data from
+    multiple systems,  providing a standardized view for downstream analytics and
+    reporting.  Data from different systems may differ due to varying data entry practices
+    or system-specific nuances.  This model is used to generate reports on reservation
+    status, track changes, and audit data consistency.  Key analytical use cases include
+    analyzing reservation trends, monitoring data quality, and identifying discrepancies
+    between systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RES_ID
+      - TW_RES_HEADER_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: TW_RES_DETAIL_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of RES_ID,
+      TW_RES_HEADER_ID, and DATA_SOURCE,  ensuring row uniqueness and facilitating
+      efficient data retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the reservation data originates,  used
+      to track data provenance and identify system-specific differences.
+
+      '
+  - name: RES_ID
+    description: 'The unique identifier for the reservation,  playing a crucial role
+      in row uniqueness and data consistency.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RES_ID
-            - TW_RES_HEADER_ID
-            - DATA_SOURCE
+    - not_null
+  - name: TW_RES_HEADER_ID
+    description: 'The identifier for the reservation header,  contributing to row
+      uniqueness and facilitating data relationships.
 
-    columns:
-      - name: TW_RES_DETAIL_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of RES_ID, TW_RES_HEADER_ID, and DATA_SOURCE, 
-          ensuring row uniqueness and facilitating efficient data retrieval.
+      '
+    tests:
+    - not_null
+  - name: COMMENTS
+    description: 'Free-text comments associated with the reservation,  providing additional
+      context for analytics and reporting.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the reservation data originates, 
-          used to track data provenance and identify system-specific differences.
+      '
+  - name: TW_STATUS
+    description: 'The current status of the reservation,  used to track changes and
+      analyze reservation trends.
 
-      - name: RES_ID
-        description: >
-          The unique identifier for the reservation, 
-          playing a crucial role in row uniqueness and data consistency.
-        tests:
-          - not_null
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the reservation has been deleted in the
+      source system,  used to monitor data consistency and audit changes.
 
-      - name: TW_RES_HEADER_ID
-        description: >
-          The identifier for the reservation header, 
-          contributing to row uniqueness and facilitating data relationships.
-        tests:
-          - not_null
-
-      - name: COMMENTS
-        description: >
-          Free-text comments associated with the reservation, 
-          providing additional context for analytics and reporting.
-
-      - name: TW_STATUS
-        description: >
-          The current status of the reservation, 
-          used to track changes and analyze reservation trends.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the reservation has been deleted in the source system, 
-          used to monitor data consistency and audit changes.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the reservation data, 
-          used to track changes and monitor data freshness.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp of the last update to the reservation data,  used to
+      track changes and monitor data freshness.

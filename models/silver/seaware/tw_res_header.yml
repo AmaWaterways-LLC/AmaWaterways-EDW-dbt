@@ -1,80 +1,80 @@
 models:
-  - name: tw_res_header
-    description: >
-      The tw_res_header model represents a standardized view of resource headers across multiple systems, 
-      providing a unified understanding of resource allocation and utilization. Data from different systems 
-      may differ due to variations in data collection and storage practices. This model is used downstream 
-      for reporting, analytics, and auditability, enabling key insights into resource efficiency and optimization.
+- name: tw_res_header
+  description: 'The tw_res_header model represents a standardized view of resource
+    headers across multiple systems,  providing a unified understanding of resource
+    allocation and utilization. Data from different systems  may differ due to variations
+    in data collection and storage practices. This model is used downstream  for reporting,
+    analytics, and auditability, enabling key insights into resource efficiency and
+    optimization.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - TW_RES_HEADER_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: TW_RES_HEADER_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of TW_RES_HEADER_ID
+      and DATA_SOURCE,  ensuring row uniqueness and facilitating efficient data retrieval.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the data was extracted, allowing for
+      differentiation between  data from various systems and enabling data lineage
+      tracking.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TW_RES_HEADER_ID
-            - DATA_SOURCE
+    - not_null
+  - name: TW_RES_HEADER_ID
+    description: 'A unique identifier for the resource header, serving as a primary
+      key in conjunction with  DATA_SOURCE to ensure row uniqueness.
 
-    columns:
-      - name: TW_RES_HEADER_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of TW_RES_HEADER_ID and DATA_SOURCE, 
-          ensuring row uniqueness and facilitating efficient data retrieval.
+      '
+    tests:
+    - not_null
+  - name: TW_COMPONENT
+    description: 'The component associated with the resource header, providing context
+      for resource allocation  and utilization analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the data was extracted, allowing for differentiation between 
-          data from various systems and enabling data lineage tracking.
+      '
+  - name: TW_OWNER_TYPE
+    description: 'The type of owner associated with the resource header, offering
+      insights into resource  ownership and responsibility.
 
-        tests:
-          - not_null
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the resource header, allowing
+      for further context  and clarification.
 
-      - name: TW_RES_HEADER_ID
-        description: >
-          A unique identifier for the resource header, serving as a primary key in conjunction with 
-          DATA_SOURCE to ensure row uniqueness.
+      '
+  - name: END_DATE
+    description: 'The end date associated with the resource header, indicating the
+      conclusion of a resource  allocation or utilization period.
 
-        tests:
-          - not_null
+      '
+  - name: START_DATE
+    description: 'The start date associated with the resource header, marking the
+      beginning of a resource  allocation or utilization period.
 
-      - name: TW_COMPONENT
-        description: >
-          The component associated with the resource header, providing context for resource allocation 
-          and utilization analysis.
+      '
+  - name: TW_STATUS
+    description: 'The status of the resource header, providing information on the
+      current state of resource  allocation or utilization.
 
-      - name: TW_OWNER_TYPE
-        description: >
-          The type of owner associated with the resource header, offering insights into resource 
-          ownership and responsibility.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the resource header has been deleted in
+      the source system,  enabling data consistency and integrity checks.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the resource header, allowing for further context 
-          and clarification.
-
-      - name: END_DATE
-        description: >
-          The end date associated with the resource header, indicating the conclusion of a resource 
-          allocation or utilization period.
-
-      - name: START_DATE
-        description: >
-          The start date associated with the resource header, marking the beginning of a resource 
-          allocation or utilization period.
-
-      - name: TW_STATUS
-        description: >
-          The status of the resource header, providing information on the current state of resource 
-          allocation or utilization.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the resource header has been deleted in the source system, 
-          enabling data consistency and integrity checks.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the resource header, allowing for tracking of data 
-          freshness and changes.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The timestamp of the last update to the resource header, allowing
+      for tracking of data  freshness and changes.

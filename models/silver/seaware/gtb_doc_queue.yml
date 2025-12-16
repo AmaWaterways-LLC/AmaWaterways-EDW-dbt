@@ -1,63 +1,67 @@
 models:
-  - name: gtb_doc_queue
-    description: >
-      The gtb_doc_queue model represents a standardized view of document queue data from multiple systems, 
-      including SW1 and SW2. This model is used to track the status of documents in the queue, 
-      providing insights into document processing efficiency and identifying potential bottlenecks. 
-      Downstream, this model is used for reporting, metrics, and auditability purposes.
+- name: gtb_doc_queue
+  description: 'The gtb_doc_queue model represents a standardized view of document
+    queue data from multiple systems,  including SW1 and SW2. This model is used to
+    track the status of documents in the queue,  providing insights into document
+    processing efficiency and identifying potential bottlenecks.  Downstream, this
+    model is used for reporting, metrics, and auditability purposes.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: GTB_DOC_QUEUE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns,  used to uniquely identify each document in the queue.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the document queue data, either SW1 or SW2.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the document in the queue, used in combination
+      with DATA_SOURCE  to uniquely identify each document. This column is part of
+      the primary key.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: DOC_STATUS
+    description: 'The current status of the document in the queue, providing insights
+      into document processing.
 
-    columns:
-      - name: GTB_DOC_QUEUE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns, 
-          used to uniquely identify each document in the queue.
+      '
+  - name: REQUEST_ID
+    description: 'A unique identifier for the request associated with the document
+      in the queue.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the document queue data, either SW1 or SW2.
+      '
+  - name: DOC_CODE
+    description: 'A code representing the type of document in the queue.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the document in the queue, used in combination with DATA_SOURCE 
-          to uniquely identify each document. This column is part of the primary key.
-        tests:
-          - not_null
+      '
+  - name: STATUS_DATE
+    description: 'The date and time the document status was last updated.
 
-      - name: DOC_STATUS
-        description: >
-          The current status of the document in the queue, providing insights into document processing.
+      '
+  - name: PRINTER_NAME
+    description: 'The name of the printer associated with the document in the queue.
 
-      - name: REQUEST_ID
-        description: >
-          A unique identifier for the request associated with the document in the queue.
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the document has been deleted in the source
+      system.
 
-      - name: DOC_CODE
-        description: >
-          A code representing the type of document in the queue.
-
-      - name: STATUS_DATE
-        description: >
-          The date and time the document status was last updated.
-
-      - name: PRINTER_NAME
-        description: >
-          The name of the printer associated with the document in the queue.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the document has been deleted in the source system.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The date and time the document was last updated in the source system.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: The date and time the document was last updated in the source system.

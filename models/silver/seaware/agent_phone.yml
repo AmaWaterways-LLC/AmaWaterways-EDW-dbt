@@ -1,106 +1,107 @@
 models:
-  - name: agent_phone
-    description: >
-      This model represents a standardized view of agent phone data from multiple systems, SW1 and SW2. 
-      The data from these systems may differ due to differences in data collection, processing, or storage. 
-      This model is used downstream to provide a unified view of agent phone data for reporting, analytics, and auditability. 
-      Key analytical use cases include tracking agent phone usage, analyzing phone type distribution, and monitoring data quality.
+- name: agent_phone
+  description: 'This model represents a standardized view of agent phone data from
+    multiple systems, SW1 and SW2.  The data from these systems may differ due to
+    differences in data collection, processing, or storage.  This model is used downstream
+    to provide a unified view of agent phone data for reporting, analytics, and auditability.  Key
+    analytical use cases include tracking agent phone usage, analyzing phone type
+    distribution, and monitoring data quality.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - AGENT_PHONE_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: AGENT_PHONE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of AGENT_PHONE_ID
+      and DATA_SOURCE.  This key ensures row uniqueness across multiple data sources.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system of the agent phone data, either SW1 or SW2.  This
+      column is used to track data origin and enable data quality analysis.
+
+      '
+  - name: AGENT_ID
+    description: 'The identifier of the agent associated with the phone data.  This
+      column is used to link agent phone data to other agent-related data.
+
+      '
+  - name: SEQ_NUMBER
+    description: 'A sequence number assigned to the phone data.  This column is used
+      to track the order of phone data updates.
+
+      '
+  - name: PHONE_TYPE
+    description: 'The type of phone, such as primary, secondary, or fax.  This column
+      is used to analyze phone type distribution and usage.
+
+      '
+  - name: INTL_CODE
+    description: 'The international code associated with the phone number.  This column
+      is used to enable international phone number analysis.
+
+      '
+  - name: PHONE_NUMBER
+    description: 'The phone number associated with the agent.  This column is used
+      to analyze phone number usage and distribution.
+
+      '
+  - name: IS_PHONE_PRIMARY
+    description: 'A flag indicating whether the phone is primary.  This column is
+      used to analyze primary phone usage and distribution.
+
+      '
+  - name: IS_PHONE_SECONDARY
+    description: 'A flag indicating whether the phone is secondary.  This column is
+      used to analyze secondary phone usage and distribution.
+
+      '
+  - name: IS_PHONE_FAX
+    description: 'A flag indicating whether the phone is a fax.  This column is used
+      to analyze fax phone usage and distribution.
+
+      '
+  - name: FAX_ATTENTION_LINE
+    description: 'The attention line associated with the fax phone number.  This column
+      is used to analyze fax phone usage and distribution.
+
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes associated with the phone data.  This
+      column is used to analyze phone data quality and usage.
+
+      '
+  - name: AGENT_PHONE_ID
+    description: 'The identifier of the agent phone data.  This column is used to
+      link agent phone data to other related data.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - AGENT_PHONE_ID
-            - DATA_SOURCE
+    - not_null
+  - name: PHONE_EXT
+    description: 'The phone extension associated with the phone number.  This column
+      is used to analyze phone extension usage and distribution.
 
-    columns:
-      - name: AGENT_PHONE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of AGENT_PHONE_ID and DATA_SOURCE. 
-          This key ensures row uniqueness across multiple data sources.
+      '
+  - name: COUNTRY_CODE
+    description: 'The country code associated with the phone number.  This column
+      is used to enable international phone number analysis.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the agent phone data, either SW1 or SW2. 
-          This column is used to track data origin and enable data quality analysis.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the phone data.  This column
+      is used to analyze data freshness and quality.
 
-      - name: AGENT_ID
-        description: >
-          The identifier of the agent associated with the phone data. 
-          This column is used to link agent phone data to other agent-related data.
-
-      - name: SEQ_NUMBER
-        description: >
-          A sequence number assigned to the phone data. 
-          This column is used to track the order of phone data updates.
-
-      - name: PHONE_TYPE
-        description: >
-          The type of phone, such as primary, secondary, or fax. 
-          This column is used to analyze phone type distribution and usage.
-
-      - name: INTL_CODE
-        description: >
-          The international code associated with the phone number. 
-          This column is used to enable international phone number analysis.
-
-      - name: PHONE_NUMBER
-        description: >
-          The phone number associated with the agent. 
-          This column is used to analyze phone number usage and distribution.
-
-      - name: IS_PHONE_PRIMARY
-        description: >
-          A flag indicating whether the phone is primary. 
-          This column is used to analyze primary phone usage and distribution.
-
-      - name: IS_PHONE_SECONDARY
-        description: >
-          A flag indicating whether the phone is secondary. 
-          This column is used to analyze secondary phone usage and distribution.
-
-      - name: IS_PHONE_FAX
-        description: >
-          A flag indicating whether the phone is a fax. 
-          This column is used to analyze fax phone usage and distribution.
-
-      - name: FAX_ATTENTION_LINE
-        description: >
-          The attention line associated with the fax phone number. 
-          This column is used to analyze fax phone usage and distribution.
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes associated with the phone data. 
-          This column is used to analyze phone data quality and usage.
-
-      - name: AGENT_PHONE_ID
-        description: >
-          The identifier of the agent phone data. 
-          This column is used to link agent phone data to other related data.
-        tests:
-          - not_null
-
-      - name: PHONE_EXT
-        description: >
-          The phone extension associated with the phone number. 
-          This column is used to analyze phone extension usage and distribution.
-
-      - name: COUNTRY_CODE
-        description: >
-          The country code associated with the phone number. 
-          This column is used to enable international phone number analysis.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the phone data. 
-          This column is used to analyze data freshness and quality.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the phone data has been deleted in the source system. 
-          This column is used to analyze data quality and track data changes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the phone data has been deleted in the
+      source system.  This column is used to analyze data quality and track data changes.

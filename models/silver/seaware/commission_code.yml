@@ -1,86 +1,102 @@
 models:
-  - name: commission_code
-    description: >
-      The commission_code model represents a standardized view of commission codes across multiple systems, 
-      including SW1 and SW2. This model is used to provide a unified understanding of commission codes, 
-      enabling accurate reporting, analytics, and auditability. The data from multiple systems may differ 
-      due to variations in data formatting, watermarking, and synchronization. This model is used 
-      downstream to support key analytical use cases, such as commission tracking, sales performance 
-      analysis, and financial reporting.
+- name: commission_code
+  description: 'The commission_code model represents a standardized view of commission
+    codes across multiple systems,  including SW1 and SW2. This model is used to provide
+    a unified understanding of commission codes,  enabling accurate reporting, analytics,
+    and auditability. The data from multiple systems may differ  due to variations
+    in data formatting, watermarking, and synchronization. This model is used  downstream
+    to support key analytical use cases, such as commission tracking, sales performance  analysis,
+    and financial reporting.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - COMMISS_CODE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: COMMISSION_CODE_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of COMMISS_CODE
+      and DATA_SOURCE,  used to uniquely identify each commission code record.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the commission code data originates,
+      either SW1 or SW2.
+
+      '
+  - name: COMMISS_CODE_ID
+    description: 'A unique identifier for the commission code, used for referencing
+      and tracking purposes.
+
+      '
+  - name: COMMISS_CODE
+    description: 'The actual commission code value, used to identify and categorize
+      commissions.
+
+      '
+  - name: COMMISS_NAME
+    description: 'The name or description associated with the commission code, providing
+      context and meaning.
+
+      '
+  - name: COMMISS_TYPE
+    description: 'The type or classification of the commission code, used for grouping
+      and analysis.
+
+      '
+  - name: BASIS_TYPE
+    description: 'The basis or criteria used to determine the commission code, such
+      as sales or revenue.
+
+      '
+  - name: COMMENTS
+    description: 'Additional notes or comments related to the commission code, providing
+      further context.
+
+      '
+  - name: GSA_GL_PROTOTYPE_ID
+    description: 'A reference to the GSA GL prototype ID, used for integration with
+      other systems.
+
+      '
+  - name: GSA_LINK_TYPE
+    description: 'The type of link or relationship between the commission code and
+      GSA GL prototype.
+
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update or synchronization of the commission
+      code data.
+
+      '
+  - name: SOURCE_DELETED
+    description: 'A flag indicating whether the commission code has been deleted in
+      the source system.
+
+      '
+  - name: EXPRESSION_ID
+    description: 'A reference to the expression ID, used for calculation and evaluation
+      purposes.
+
+      '
+  - name: COMMISS_CODE
+    description: 'The commission code value, used as part of the primary key to uniquely
+      identify each record.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - COMMISS_CODE
-            - DATA_SOURCE
+    - not_null
+  - name: DATA_SOURCE
+    description: 'The source system from which the commission code data originates,
+      used as part of the primary key.
 
-    columns:
-      - name: COMMISSION_CODE_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of COMMISS_CODE and DATA_SOURCE, 
-          used to uniquely identify each commission code record.
-
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the commission code data originates, either SW1 or SW2.
-
-      - name: COMMISS_CODE_ID
-        description: >
-          A unique identifier for the commission code, used for referencing and tracking purposes.
-
-      - name: COMMISS_CODE
-        description: >
-          The actual commission code value, used to identify and categorize commissions.
-
-      - name: COMMISS_NAME
-        description: >
-          The name or description associated with the commission code, providing context and meaning.
-
-      - name: COMMISS_TYPE
-        description: >
-          The type or classification of the commission code, used for grouping and analysis.
-
-      - name: BASIS_TYPE
-        description: >
-          The basis or criteria used to determine the commission code, such as sales or revenue.
-
-      - name: COMMENTS
-        description: >
-          Additional notes or comments related to the commission code, providing further context.
-
-      - name: GSA_GL_PROTOTYPE_ID
-        description: >
-          A reference to the GSA GL prototype ID, used for integration with other systems.
-
-      - name: GSA_LINK_TYPE
-        description: >
-          The type of link or relationship between the commission code and GSA GL prototype.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update or synchronization of the commission code data.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the commission code has been deleted in the source system.
-
-      - name: EXPRESSION_ID
-        description: >
-          A reference to the expression ID, used for calculation and evaluation purposes.
-
-      - name: COMMISS_CODE
-        description: >
-          The commission code value, used as part of the primary key to uniquely identify each record.
-        tests:
-          - not_null
-
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the commission code data originates, used as part of the primary key.
-        tests:
-          - not_null
+      '
+    tests:
+    - not_null

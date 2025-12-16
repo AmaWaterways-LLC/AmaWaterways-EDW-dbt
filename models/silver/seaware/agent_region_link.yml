@@ -1,63 +1,75 @@
 models:
-  - name: agent_region_link
-    description: >
-      The agent_region_link model represents the relationship between agents and regions in the enterprise domain.
-      Data from multiple systems (SW1 and SW2) may differ due to differences in data sources and update frequencies.
-      This standardized model is used downstream for reporting, metrics, and auditability, providing a unified view of agent-region relationships.
-      Key analytical use cases include analyzing agent performance by region, tracking changes in agent-region assignments, and identifying data discrepancies between systems.
+- name: agent_region_link
+  description: 'The agent_region_link model represents the relationship between agents
+    and regions in the enterprise domain. Data from multiple systems (SW1 and SW2)
+    may differ due to differences in data sources and update frequencies. This standardized
+    model is used downstream for reporting, metrics, and auditability, providing a
+    unified view of agent-region relationships. Key analytical use cases include analyzing
+    agent performance by region, tracking changes in agent-region assignments, and
+    identifying data discrepancies between systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - RECORD_ID
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: AGENT_REGION_LINK_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the RECORD_ID and DATA_SOURCE
+      columns, ensuring row uniqueness across multiple data sources.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - RECORD_ID
-            - DATA_SOURCE
+    - not_null
+  - name: DATA_SOURCE
+    description: 'The source system of the data (SW1 or SW2), indicating the origin
+      of the agent-region relationship record.
 
-    columns:
-      - name: AGENT_REGION_LINK_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the RECORD_ID and DATA_SOURCE columns, ensuring row uniqueness across multiple data sources.
-        tests:
-          - not_null
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for the agent-region relationship record within
+      the source system, used in combination with DATA_SOURCE to ensure row uniqueness.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system of the data (SW1 or SW2), indicating the origin of the agent-region relationship record.
+      '
+    tests:
+    - not_null
+  - name: AGENT_ID
+    description: 'The identifier of the agent associated with the region, used for
+      analyzing agent performance and tracking changes in agent-region assignments.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the agent-region relationship record within the source system, used in combination with DATA_SOURCE to ensure row uniqueness.
-        tests:
-          - not_null
+      '
+  - name: REGION_ID
+    description: 'The identifier of the region associated with the agent, used for
+      analyzing regional performance and tracking changes in agent-region assignments.
 
-      - name: AGENT_ID
-        description: >
-          The identifier of the agent associated with the region, used for analyzing agent performance and tracking changes in agent-region assignments.
+      '
+  - name: DATE_FROM
+    description: 'The start date of the agent-region relationship, used for tracking
+      changes in agent-region assignments over time.
 
-      - name: REGION_ID
-        description: >
-          The identifier of the region associated with the agent, used for analyzing regional performance and tracking changes in agent-region assignments.
+      '
+  - name: DATE_TO
+    description: 'The end date of the agent-region relationship, used for tracking
+      changes in agent-region assignments over time.
 
-      - name: DATE_FROM
-        description: >
-          The start date of the agent-region relationship, used for tracking changes in agent-region assignments over time.
+      '
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the agent-region relationship,
+      providing context for analytical and reporting purposes.
 
-      - name: DATE_TO
-        description: >
-          The end date of the agent-region relationship, used for tracking changes in agent-region assignments over time.
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp of the last update to the agent-region relationship
+      record, used for tracking data freshness and changes over time.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the agent-region relationship, providing context for analytical and reporting purposes.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp of the last update to the agent-region relationship record, used for tracking data freshness and changes over time.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the agent-region relationship record has been deleted in the source system, used for tracking data changes and auditability.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the agent-region relationship record has
+      been deleted in the source system, used for tracking data changes and auditability.

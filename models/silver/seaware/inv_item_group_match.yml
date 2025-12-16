@@ -1,85 +1,89 @@
 models:
-  - name: inv_item_group_match
-    description: >
-      This model represents a standardized view of invoice item group matches across multiple systems, 
-      providing a unified understanding of how different systems categorize and match invoice items. 
-      The data from multiple systems may differ due to variations in data entry, system configurations, 
-      or business rules. This model is used downstream to support reporting, analytics, and auditability, 
-      enabling stakeholders to track and analyze invoice item group matches across different systems.
+- name: inv_item_group_match
+  description: 'This model represents a standardized view of invoice item group matches
+    across multiple systems,  providing a unified understanding of how different systems
+    categorize and match invoice items.  The data from multiple systems may differ
+    due to variations in data entry, system configurations,  or business rules. This
+    model is used downstream to support reporting, analytics, and auditability,  enabling
+    stakeholders to track and analyze invoice item group matches across different
+    systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - INVOICE_ITEM_TYPE
+      - INV_ITEM_GROUP
+      - INV_ITEM_GROUP_TYPE
+      - OFFICE_CODE
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: INV_ITEM_GROUP_MATCH_SURROGATE_KEY
+    description: 'A unique identifier for each invoice item group match, generated
+      based on a combination of  INVOICE_ITEM_TYPE, INV_ITEM_GROUP, INV_ITEM_GROUP_TYPE,
+      OFFICE_CODE, and DATA_SOURCE.  This key ensures row uniqueness and facilitates
+      data integration and analysis.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the invoice item group match data originates,
+      either ''SW1'' or ''SW2''.  This column allows for data lineage and auditing,
+      enabling the tracking of data changes and updates.
+
+      '
+  - name: RECORD_ID
+    description: 'A unique identifier for each record in the source system, used for
+      data tracking and auditing purposes.
+
+      '
+  - name: INVOICE_ITEM_TYPE
+    description: 'The type of invoice item, which determines how the item is categorized
+      and matched.  This column is a key component of the invoice item group match
+      surrogate key.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - INVOICE_ITEM_TYPE
-            - INV_ITEM_GROUP
-            - INV_ITEM_GROUP_TYPE
-            - OFFICE_CODE
-            - DATA_SOURCE
+    - not_null
+  - name: INV_ITEM_GROUP
+    description: 'The group to which the invoice item belongs, used for categorization
+      and matching purposes.  This column is a key component of the invoice item group
+      match surrogate key.
 
-    columns:
-      - name: INV_ITEM_GROUP_MATCH_SURROGATE_KEY
-        description: >
-          A unique identifier for each invoice item group match, generated based on a combination of 
-          INVOICE_ITEM_TYPE, INV_ITEM_GROUP, INV_ITEM_GROUP_TYPE, OFFICE_CODE, and DATA_SOURCE. 
-          This key ensures row uniqueness and facilitates data integration and analysis.
+      '
+    tests:
+    - not_null
+  - name: COMMENTS
+    description: 'Additional comments or notes related to the invoice item group match,
+      providing context and  supporting data analysis and reporting.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the invoice item group match data originates, either 'SW1' or 'SW2'. 
-          This column allows for data lineage and auditing, enabling the tracking of data changes and updates.
+      '
+  - name: INV_ITEM_GROUP_TYPE
+    description: 'The type of invoice item group, which further categorizes the invoice
+      item.  This column is a key component of the invoice item group match surrogate
+      key.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for each record in the source system, used for data tracking and auditing purposes.
+      '
+    tests:
+    - not_null
+  - name: OFFICE_CODE
+    description: 'The office code associated with the invoice item group match, used
+      for organizational and  reporting purposes. This column is a key component of
+      the invoice item group match surrogate key.
 
-      - name: INVOICE_ITEM_TYPE
-        description: >
-          The type of invoice item, which determines how the item is categorized and matched. 
-          This column is a key component of the invoice item group match surrogate key.
+      '
+    tests:
+    - not_null
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the invoice item group match data was last updated,
+      used for data freshness  and auditing purposes.
 
-        tests:
-          - not_null
-
-      - name: INV_ITEM_GROUP
-        description: >
-          The group to which the invoice item belongs, used for categorization and matching purposes. 
-          This column is a key component of the invoice item group match surrogate key.
-
-        tests:
-          - not_null
-
-      - name: COMMENTS
-        description: >
-          Additional comments or notes related to the invoice item group match, providing context and 
-          supporting data analysis and reporting.
-
-      - name: INV_ITEM_GROUP_TYPE
-        description: >
-          The type of invoice item group, which further categorizes the invoice item. 
-          This column is a key component of the invoice item group match surrogate key.
-
-        tests:
-          - not_null
-
-      - name: OFFICE_CODE
-        description: >
-          The office code associated with the invoice item group match, used for organizational and 
-          reporting purposes. This column is a key component of the invoice item group match surrogate key.
-
-        tests:
-          - not_null
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the invoice item group match data was last updated, used for data freshness 
-          and auditing purposes.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the invoice item group match data has been deleted in the source system, 
-          used for data tracking and auditing purposes.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the invoice item group match data has been
+      deleted in the source system,  used for data tracking and auditing purposes.

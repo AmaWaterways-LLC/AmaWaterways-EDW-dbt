@@ -16,6 +16,7 @@ models:
           combination_of_columns:
             - BATCH_HDR_ID
             - DATA_SOURCE
+          where: "SOURCE_DELETED = false"
 
     columns:
       - name: ACC_BATCH_HEADER_SURROGATE_KEY

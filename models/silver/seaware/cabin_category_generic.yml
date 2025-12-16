@@ -1,63 +1,70 @@
 models:
-  - name: cabin_category_generic
-    description: >
-      This model represents a standardized view of cabin category generic data from multiple source systems, SW1 and SW2. 
-      The data from these systems may differ due to variations in data entry, formatting, or update frequencies. 
-      This model is used downstream to provide a unified view of cabin category generic data for reporting, analytics, and auditability purposes. 
-      Key analytical use cases include analyzing cabin category generic data by source system, tracking changes to cabin category generic data over time, and identifying discrepancies between source systems.
+- name: cabin_category_generic
+  description: 'This model represents a standardized view of cabin category generic
+    data from multiple source systems, SW1 and SW2.  The data from these systems may
+    differ due to variations in data entry, formatting, or update frequencies.  This
+    model is used downstream to provide a unified view of cabin category generic data
+    for reporting, analytics, and auditability purposes.  Key analytical use cases
+    include analyzing cabin category generic data by source system, tracking changes
+    to cabin category generic data over time, and identifying discrepancies between
+    source systems.
 
-    meta:
-      owner: data_engineering
-      criticality: high
-      pii: false
+    '
+  meta:
+    owner: data_engineering
+    criticality: high
+    pii: false
+  tests:
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns:
+      - CABIN_CATEGORY_GENERIC
+      - DATA_SOURCE
+      where: "SOURCE_DELETED = false"
 
+  columns:
+  - name: CABIN_CATEGORY_GENERIC_SURROGATE_KEY
+    description: 'A unique surrogate key generated from the combination of CABIN_CATEGORY_GENERIC
+      and DATA_SOURCE columns.  This key is used to uniquely identify each row in
+      the model.
+
+      '
+  - name: DATA_SOURCE
+    description: 'The source system from which the cabin category generic data originates.  This
+      column is used to track the origin of the data and to identify discrepancies
+      between source systems.
+
+      '
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CABIN_CATEGORY_GENERIC
-            - DATA_SOURCE
+    - not_null
+  - name: RECORD_ID
+    description: 'A unique identifier for the cabin category generic record in the
+      source system.  This column is used to track changes to the record over time.
 
-    columns:
-      - name: CABIN_CATEGORY_GENERIC_SURROGATE_KEY
-        description: >
-          A unique surrogate key generated from the combination of CABIN_CATEGORY_GENERIC and DATA_SOURCE columns. 
-          This key is used to uniquely identify each row in the model.
+      '
+  - name: CABIN_CATEGORY_GENERIC
+    description: 'The generic category of the cabin.  This column is used to analyze
+      cabin category generic data by category.
 
-      - name: DATA_SOURCE
-        description: >
-          The source system from which the cabin category generic data originates. 
-          This column is used to track the origin of the data and to identify discrepancies between source systems.
-        tests:
-          - not_null
+      '
+    tests:
+    - not_null
+  - name: COMMENTS
+    description: 'Additional comments or notes about the cabin category generic record.  This
+      column is used to provide context and additional information about the record.
 
-      - name: RECORD_ID
-        description: >
-          A unique identifier for the cabin category generic record in the source system. 
-          This column is used to track changes to the record over time.
+      '
+  - name: RANK
+    description: 'The rank or priority of the cabin category generic record.  This
+      column is used to analyze cabin category generic data by rank.
 
-      - name: CABIN_CATEGORY_GENERIC
-        description: >
-          The generic category of the cabin. 
-          This column is used to analyze cabin category generic data by category.
-        tests:
-          - not_null
+      '
+  - name: LAST_UPDATED_TIMESTAMP
+    description: 'The timestamp when the cabin category generic record was last updated
+      in the source system.  This column is used to track changes to the record over
+      time.
 
-      - name: COMMENTS
-        description: >
-          Additional comments or notes about the cabin category generic record. 
-          This column is used to provide context and additional information about the record.
-
-      - name: RANK
-        description: >
-          The rank or priority of the cabin category generic record. 
-          This column is used to analyze cabin category generic data by rank.
-
-      - name: LAST_UPDATED_TIMESTAMP
-        description: >
-          The timestamp when the cabin category generic record was last updated in the source system. 
-          This column is used to track changes to the record over time.
-
-      - name: SOURCE_DELETED
-        description: >
-          A flag indicating whether the cabin category generic record has been deleted in the source system. 
-          This column is used to track deleted records and to identify discrepancies between source systems.
+      '
+  - name: SOURCE_DELETED
+    description: A flag indicating whether the cabin category generic record has been
+      deleted in the source system.  This column is used to track deleted records
+      and to identify discrepancies between source systems.
