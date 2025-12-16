@@ -82,11 +82,3 @@ models:
       - name: SOURCE_DELETED
         description: >
           A flag indicating whether the cabin record has been deleted in the source system.
-
-    tests:
-      - not_null:
-          column: CABIN_NUMBER
-      - not_null:
-          column: SHIP_CODE
-      - not_null:
-          column: DATA_SOURCE

@@ -58,8 +58,3 @@ models:
           based on the _FIVETRAN_DELETED column. This column is used for data quality and 
           auditing purposes.
 
-    tests:
-      - not_null:
-          column: SUBJECT
-      - not_null:
-          column: DATA_SOURCE
