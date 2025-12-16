@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['CABIN_ATTR_ID', 'CABIN_NUMBER', 'SEQ_NUMBER', 'SHIP_CODE', 'DATA_SOURCE'],
+        unique_key=['RECORD_ID', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -107,14 +107,14 @@ sw2_src AS (
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "CABIN_NUMBER", "SEQ_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+    {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
     sw1_src.*
 FROM sw1_src
 
 UNION ALL
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "CABIN_NUMBER", "SEQ_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+    {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
     sw2_src.*
 FROM sw2_src
 

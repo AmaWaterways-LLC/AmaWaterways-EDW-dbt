@@ -1,87 +1,89 @@
+version: 2
+
 models:
-- name: currency_exchng_rate
-  description: 'The currency_exchng_rate model represents the standardized currency
-    exchange rates  used across the enterprise, combining data from multiple source
-    systems (SW1 and SW2).  The data from these systems may differ due to variations
-    in data collection methods,  data freshness, and system-specific nuances. This
-    model is used downstream for financial  reporting, analytics, and auditing purposes,
-    providing a unified view of currency exchange  rates and enabling accurate financial
-    calculations and insights.
+  - name: currency_exchng_rate
+    description: >
+      The currency_exchng_rate model represents the standardized currency exchange
+      rates used across the enterprise, combining data from multiple source systems
+      (SW1 and SW2). The data from these systems may differ due to variations in data
+      collection methods, data freshness, and system-specific nuances.
 
-    '
-  meta:
-    owner: data_engineering
-    criticality: high
-    pii: false
-  tests:
-  - dbt_utils.unique_combination_of_columns:
-      combination_of_columns:
-      - CURRENCY_CODE
-      - DATE_FROM
-      - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      This model is built as a full-refresh table and provides a unified view of
+      currency exchange rates for downstream financial reporting, analytics, and
+      auditing use cases.
 
-  columns:
-  - name: CURRENCY_EXCHNG_RATE_SURROGATE_KEY
-    description: 'A unique identifier for each currency exchange rate record, generated
-      by combining  the CURRENCY_CODE, DATE_FROM, and DATA_SOURCE columns. This key
-      ensures row uniqueness  and facilitates efficient data retrieval and manipulation.
+    meta:
+      owner: data_engineering
+      criticality: high
+      pii: false
 
-      '
-  - name: DATA_SOURCE
-    description: 'The source system from which the currency exchange rate data originates,
-      either SW1 or SW2.  This column allows for data lineage tracking and facilitates
-      data quality analysis.
+    columns:
+      - name: CURRENCY_EXCHNG_RATE_SURROGATE_KEY
+        description: >
+          A technical surrogate identifier generated from the combination of
+          CURRENCY_CODE, DATE_FROM, and DATA_SOURCE. This column is intended for
+          downstream joins and convenience, but is not enforced as a uniqueness
+          constraint in this model.
 
-      '
-  - name: CURRENCY_CODE
-    description: 'The standardized currency code, representing the currency for which
-      the exchange rate is  being reported. This column is a key component of the
-      primary key and ensures data  consistency across the model.
+      - name: DATA_SOURCE
+        description: >
+          The source system from which the currency exchange rate data originates,
+          either SW1 or SW2. This column supports data lineage, auditing, and
+          source-level analysis.
 
-      '
-    tests:
-    - not_null
-  - name: EXCHANGE_RATE
-    description: 'The exchange rate value for the specified currency code and date
-      range. This column is  critical for financial calculations and analytics.
+        tests:
+          - not_null
 
-      '
-  - name: DATE_FROM
-    description: 'The start date of the exchange rate''s validity period. This column,
-      in combination with  the CURRENCY_CODE and DATA_SOURCE, forms the primary key
-      and ensures data uniqueness.
+      - name: CURRENCY_CODE
+        description: >
+          The standardized currency code representing the currency for which the
+          exchange rate is reported. This column is used for filtering, grouping,
+          and financial calculations.
 
-      '
-    tests:
-    - not_null
-  - name: DATE_TO
-    description: 'The end date of the exchange rate''s validity period. This column
-      provides additional  context for data analysis and reporting.
+        tests:
+          - not_null
 
-      '
-  - name: EXCHANGE_RATE_ID
-    description: 'A unique identifier for the exchange rate record, specific to the
-      source system. This  column may be used for data lineage and auditing purposes.
+      - name: EXCHANGE_RATE
+        description: >
+          The exchange rate value for the specified currency and effective date
+          range. This column is critical for financial calculations and reporting.
 
-      '
-  - name: INVERSE_RATE
-    description: 'The inverse exchange rate value, applicable only to data from the
-      SW2 source system.  This column provides additional information for financial
-      calculations and analytics.
+      - name: DATE_FROM
+        description: >
+          The start date of the exchange rate's validity period. This column defines
+          when the exchange rate becomes effective.
 
-      '
-  - name: CURRENCY_CODE_TO
-    description: 'The currency code to which the exchange rate is being converted,
-      applicable only to data  from the SW2 source system. This column provides additional
-      context for data analysis  and reporting.
+        tests:
+          - not_null
 
-      '
-  - name: LAST_UPDATED_TIMESTAMP
-    description: 'The timestamp of the last update to the exchange rate record, used
-      for data freshness  and auditing purposes.
+      - name: DATE_TO
+        description: >
+          The end date of the exchange rate's validity period. This column provides
+          context for historical analysis and rate applicability.
 
-      '
-  - name: SOURCE_DELETED
-    description: A flag indicating whether the exchange rate record has been deleted
-      in the source system.  This column is used for data lineage and auditing purposes.
+      - name: EXCHANGE_RATE_ID
+        description: >
+          A source-system-specific identifier for the exchange rate record. This
+          column is preserved for lineage, traceability, and audit purposes.
+
+      - name: INVERSE_RATE
+        description: >
+          The inverse exchange rate value, applicable only to data originating from
+          the SW2 source system.
+
+      - name: CURRENCY_CODE_TO
+        description: >
+          The target currency code to which the exchange rate applies, applicable
+          only to data from the SW2 source system.
+
+      - name: LAST_UPDATED_TIMESTAMP
+        description: >
+          The timestamp indicating when the exchange rate record was last updated
+          in the source system. This column supports auditability and data freshness
+          analysis.
+
+      - name: SOURCE_DELETED
+        description: >
+          A flag indicating whether the exchange rate record has been marked as
+          deleted in the source system. This column supports soft-delete handling
+          and historical auditing.

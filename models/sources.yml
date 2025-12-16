@@ -6,7 +6,6 @@ sources:
     schema: SW1_SEAWARE
     description: "Source tables from the SW1 Seaware application"
     tables:
-
       - name: RES_INVOICE_ITEM
       - name: RES_HEADER
       - name: AGENCY
@@ -386,7 +385,6 @@ sources:
     schema: SW1_SEAWARE
     description: "Source tables from the SW1 Seaware application"
     tables:
-
       - name: RES_INVOICE_ITEM
       - name: RES_HEADER
       - name: AGENCY
