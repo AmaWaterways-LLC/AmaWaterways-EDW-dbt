@@ -21,8 +21,8 @@
              {% if target_relation is not none %}
                  {% set cfg = get_config_row(
                         'SW1',
-                        target.database,
-                        target.schema,
+                        this.database,
+                        this.schema,
                         'INV_ITEM_GROUP_MATCH'
                  ) %}
              {% endif %}"
@@ -32,8 +32,8 @@
             "{% if execute %}
                  {% set wm_col_sw1 = get_watermark_column(
                         'SW1',
-                        target.database,
-                        target.schema,
+                        this.database,
+                        this.schema,
                         'INV_ITEM_GROUP_MATCH'
                  ) %}
                  {% set max_wm_sw1 = compute_max_watermark_seaware(
@@ -44,8 +44,8 @@
                  {% if max_wm_sw1 is not none %}
                      {% do update_config_watermark(
                         'SW1',
-                        target.database,
-                        target.schema,
+                        this.database,
+                        this.schema,
                         'INV_ITEM_GROUP_MATCH',
                         max_wm_sw1
                      ) %}
@@ -53,8 +53,8 @@
 
                  {% set wm_col_sw2 = get_watermark_column(
                         'SW2',
-                        target.database,
-                        target.schema,
+                        this.database,
+                        this.schema,
                         'INV_ITEM_GROUP_MATCH'
                  ) %}
                  {% set max_wm_sw2 = compute_max_watermark_seaware(
@@ -65,8 +65,8 @@
                  {% if max_wm_sw2 is not none %}
                      {% do update_config_watermark(
                         'SW2',
-                        target.database,
-                        target.schema,
+                        this.database,
+                        this.schema,
                         'INV_ITEM_GROUP_MATCH',
                         max_wm_sw2
                      ) %}
@@ -81,12 +81,12 @@
    ================================================================ #}
 
 {% if execute %}
-    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'INV_ITEM_GROUP_MATCH') %}
+    {% set cfg_sw1 = get_config_row('SW1', this.database, this.schema, 'INV_ITEM_GROUP_MATCH') %}
     {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
     {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw1 = (last_wm_sw1 is none) %}
 
-    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'INV_ITEM_GROUP_MATCH') %}
+    {% set cfg_sw2 = get_config_row('SW2', this.database, this.schema, 'INV_ITEM_GROUP_MATCH') %}
     {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
     {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw2 = (last_wm_sw2 is none) %}

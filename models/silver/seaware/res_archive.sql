@@ -15,22 +15,22 @@
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
              {% if table_exists %}
-                 {% set cfg = get_config_row('SW1', target.database, target.schema, 'RES_ARCHIVE') %}
+                 {% set cfg = get_config_row('SW1', this.database, this.schema, 'RES_ARCHIVE') %}
                  {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}            
              {% endif %}"
         ],
         post_hook=[
             "{% if execute %}
-                 {% set wm_col_sw1 = get_watermark_column('SW1', target.database, target.schema, 'RES_ARCHIVE') %}
+                 {% set wm_col_sw1 = get_watermark_column('SW1', this.database, this.schema, 'RES_ARCHIVE') %}
                  {% set max_wm_sw1 = compute_max_watermark_seaware(this, wm_col_sw1, 'SW1') %}
                  {% if max_wm_sw1 is not none %}
-                     {% do update_config_watermark('SW1', target.database, target.schema, 'RES_ARCHIVE', max_wm_sw1) %}
+                     {% do update_config_watermark('SW1', this.database, this.schema, 'RES_ARCHIVE', max_wm_sw1) %}
                  {% endif %}
 
-                 {% set wm_col_sw2 = get_watermark_column('SW2', target.database, target.schema, 'RES_ARCHIVE') %}
+                 {% set wm_col_sw2 = get_watermark_column('SW2', this.database, this.schema, 'RES_ARCHIVE') %}
                  {% set max_wm_sw2 = compute_max_watermark_seaware(this, wm_col_sw2, 'SW2') %}
                  {% if max_wm_sw2 is not none %}
-                     {% do update_config_watermark('SW2', target.database, target.schema, 'RES_ARCHIVE', max_wm_sw2) %}
+                     {% do update_config_watermark('SW2', this.database, this.schema, 'RES_ARCHIVE', max_wm_sw2) %}
                 {% endif %}
              {% endif %}"
         ]
@@ -43,11 +43,11 @@
    ================================================================ #}
 
 {% if execute %}
-    {% set cfg_sw1 = get_config_row('SW1', target.database, target.schema, 'RES_ARCHIVE') %}
+    {% set cfg_sw1 = get_config_row('SW1', this.database, this.schema, 'RES_ARCHIVE') %}
     {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
     {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw1 = (last_wm_sw1 is none) %}
-    {% set cfg_sw2 = get_config_row('SW2', target.database, target.schema, 'RES_ARCHIVE') %}
+    {% set cfg_sw2 = get_config_row('SW2', this.database, this.schema, 'RES_ARCHIVE') %}
     {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
     {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
     {% set is_full_sw2 = (last_wm_sw2 is none) %}
