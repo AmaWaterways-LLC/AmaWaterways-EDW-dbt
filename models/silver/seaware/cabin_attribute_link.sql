@@ -109,16 +109,14 @@ sw2_src AS (
 SELECT *
 FROM (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(['RECORD_ID', 'DATA_SOURCE']) }}
-            AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
         sw1_src.*
     FROM sw1_src
 
     UNION ALL
 
     SELECT
-        {{ dbt_utils.generate_surrogate_key(['RECORD_ID', 'DATA_SOURCE']) }}
-            AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_LINK_SURROGATE_KEY,
         sw2_src.*
     FROM sw2_src
 )
@@ -127,3 +125,4 @@ QUALIFY
         PARTITION BY RECORD_ID, DATA_SOURCE
         ORDER BY LAST_UPDATED_TIMESTAMP DESC
 ) = 1
+

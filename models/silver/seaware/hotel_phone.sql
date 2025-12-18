@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['SEQ_NUMBER', 'HOTEL_ID', 'DATA_SOURCE'],
+        unique_key=['HOTEL_ID', 'SEQ_NUMBER', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -117,20 +117,20 @@ sw2_src AS (
 SELECT *
 FROM (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["SEQ_NUMBER", "HOTEL_ID", "DATA_SOURCE"]) }} AS HOTEL_PHONE_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["HOTEL_ID", "SEQ_NUMBER", "DATA_SOURCE"]) }} AS HOTEL_PHONE_SURROGATE_KEY,
         sw1_src.*
     FROM sw1_src
 
     UNION ALL
 
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["SEQ_NUMBER", "HOTEL_ID", "DATA_SOURCE"]) }} AS HOTEL_PHONE_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["HOTEL_ID", "SEQ_NUMBER", "DATA_SOURCE"]) }} AS HOTEL_PHONE_SURROGATE_KEY,
         sw2_src.*
     FROM sw2_src
 )
 QUALIFY
     ROW_NUMBER() OVER (
-        PARTITION BY SEQ_NUMBER, HOTEL_ID, DATA_SOURCE
+        PARTITION BY HOTEL_ID, SEQ_NUMBER, DATA_SOURCE
         ORDER BY LAST_UPDATED_TIMESTAMP DESC
 ) = 1
 

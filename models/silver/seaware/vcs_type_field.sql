@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['_FIVETRAN_ID', 'DATA_SOURCE'],
+        unique_key=['DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -129,20 +129,20 @@ sw2_src AS (
 SELECT *
 FROM (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["_FIVETRAN_ID", "DATA_SOURCE"]) }} AS VCS_TYPE_FIELD_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["DATA_SOURCE"]) }} AS VCS_TYPE_FIELD_SURROGATE_KEY,
         sw1_src.*
     FROM sw1_src
 
     UNION ALL
 
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["_FIVETRAN_ID", "DATA_SOURCE"]) }} AS VCS_TYPE_FIELD_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["DATA_SOURCE"]) }} AS VCS_TYPE_FIELD_SURROGATE_KEY,
         sw2_src.*
     FROM sw2_src
 )
 QUALIFY
     ROW_NUMBER() OVER (
-        PARTITION BY _FIVETRAN_ID, DATA_SOURCE
+        PARTITION BY DATA_SOURCE
         ORDER BY LAST_UPDATED_TIMESTAMP DESC
 ) = 1
 

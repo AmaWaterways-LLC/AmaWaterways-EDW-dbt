@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['RES_ID', 'DUE_TYPE', 'DATA_SOURCE'],
+        unique_key=['DUE_TYPE', 'RES_ID', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -103,20 +103,20 @@ sw2_src AS (
 SELECT *
 FROM (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["RES_ID", "DUE_TYPE", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
         sw1_src.*
     FROM sw1_src
 
     UNION ALL
 
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["RES_ID", "DUE_TYPE", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
         sw2_src.*
     FROM sw2_src
 )
 QUALIFY
     ROW_NUMBER() OVER (
-        PARTITION BY RES_ID, DUE_TYPE, DATA_SOURCE
+        PARTITION BY DUE_TYPE, RES_ID, DATA_SOURCE
         ORDER BY LAST_UPDATED_TIMESTAMP DESC
 ) = 1
 

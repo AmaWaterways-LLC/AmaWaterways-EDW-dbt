@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['DECK_NUMBER', 'SHIP_CODE', 'DATA_SOURCE'],
+        unique_key=['SHIP_CODE', 'DECK_NUMBER', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -107,20 +107,20 @@ sw2_src AS (
 SELECT *
 FROM (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["DECK_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_DECK_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DECK_NUMBER", "DATA_SOURCE"]) }} AS SHIP_DECK_SURROGATE_KEY,
         sw1_src.*
     FROM sw1_src
 
     UNION ALL
 
     SELECT
-        {{ dbt_utils.generate_surrogate_key(["DECK_NUMBER", "SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_DECK_SURROGATE_KEY,
+        {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DECK_NUMBER", "DATA_SOURCE"]) }} AS SHIP_DECK_SURROGATE_KEY,
         sw2_src.*
     FROM sw2_src
 )
 QUALIFY
     ROW_NUMBER() OVER (
-        PARTITION BY DECK_NUMBER, SHIP_CODE, DATA_SOURCE
+        PARTITION BY SHIP_CODE, DECK_NUMBER, DATA_SOURCE
         ORDER BY LAST_UPDATED_TIMESTAMP DESC
 ) = 1
 
