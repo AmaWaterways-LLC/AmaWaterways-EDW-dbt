@@ -90,15 +90,23 @@ WITH src AS (
             {{ transform_string('TIMING') }} AS TIMING,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'RES_AIR_REQUEST_SEGMENT') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'RES_AIR_REQUEST_SEGMENT') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full_sw1 %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["RTG_SEGMENT_ID", "DATA_SOURCE"]) }} AS RES_AIR_REQUEST_SEGMENT_SURROGATE_KEY,
-    src.*
-FROM src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RTG_SEGMENT_ID", "DATA_SOURCE"]) }} AS RES_AIR_REQUEST_SEGMENT_SURROGATE_KEY,
+        src.*
+    FROM src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY RTG_SEGMENT_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

@@ -72,7 +72,6 @@ WITH sw1_src AS (
             {{ transform_numeric('REC_SEQN') }} AS REC_SEQN,
             {{ transform_string('INVOICE_ITEM_TYPE') }} AS INVOICE_ITEM_TYPE,
             {{ transform_string('INVOICE_ITEM_SUBTYPE') }} AS INVOICE_ITEM_SUBTYPE,
-            {{ transform_numeric('QUANTITY') }} AS QUANTITY,
             {{ transform_datetime('EFF_DATE') }} AS EFF_DATE,
             NULL AS AMOUNT,
             NULL AS TOTAL_AMOUNT,
@@ -99,12 +98,13 @@ WITH sw1_src AS (
             NULL AS TOTAL_N_OF_UNITS,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
+            {{ transform_numeric('QUANTITY') }} AS QUANTITY,
             {{ transform_numeric('BROCHURE_PRICE') }} AS BROCHURE_PRICE,
             {{ transform_numeric('EBD_PRICE') }} AS EBD_PRICE,
             {{ transform_numeric('GROUP_PRICE') }} AS GROUP_PRICE,
             {{ transform_numeric('TOTAL_PRICE') }} AS TOTAL_PRICE,
             {{ transform_numeric('GROUP_AIR_REQ_ID') }} AS GROUP_AIR_REQ_ID
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'GROUP_INVOICE_ITEM') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'GROUP_INVOICE_ITEM') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -119,7 +119,6 @@ sw2_src AS (
             {{ transform_numeric('REC_SEQN') }} AS REC_SEQN,
             {{ transform_string('INVOICE_ITEM_TYPE') }} AS INVOICE_ITEM_TYPE,
             {{ transform_string('INVOICE_ITEM_SUBTYPE') }} AS INVOICE_ITEM_SUBTYPE,
-            {{ transform_numeric('QUANTITY') }} AS QUANTITY,
             {{ transform_datetime('EFF_DATE') }} AS EFF_DATE,
             {{ transform_numeric('AMOUNT') }} AS AMOUNT,
             {{ transform_numeric('TOTAL_AMOUNT') }} AS TOTAL_AMOUNT,
@@ -146,27 +145,36 @@ sw2_src AS (
             {{ transform_numeric('TOTAL_N_OF_UNITS') }} AS TOTAL_N_OF_UNITS,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
+            {{ transform_numeric('QUANTITY') }} AS QUANTITY,
             NULL AS BROCHURE_PRICE,
             NULL AS EBD_PRICE,
             NULL AS GROUP_PRICE,
             NULL AS TOTAL_PRICE,
             NULL AS GROUP_AIR_REQ_ID
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'GROUP_INVOICE_ITEM') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'GROUP_INVOICE_ITEM') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS GROUP_INVOICE_ITEM_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS GROUP_INVOICE_ITEM_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS GROUP_INVOICE_ITEM_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RECORD_ID", "DATA_SOURCE"]) }} AS GROUP_INVOICE_ITEM_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY RECORD_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

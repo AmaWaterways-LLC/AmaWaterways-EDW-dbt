@@ -78,7 +78,7 @@ WITH sw1_src AS (
             {{ transform_datetime('ACTIVE_CNG_TIMESTAMP') }} AS ACTIVE_CNG_TIMESTAMP,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'AIRPORT') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'AIRPORT') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -99,22 +99,30 @@ sw2_src AS (
             {{ transform_date('ACTIVE_CNG_TIMESTAMP') }} AS ACTIVE_CNG_TIMESTAMP,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'AIRPORT') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'AIRPORT') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AIRPORT_CODE", "DATA_SOURCE"]) }} AS AIRPORT_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AIRPORT_CODE", "DATA_SOURCE"]) }} AS AIRPORT_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AIRPORT_CODE", "DATA_SOURCE"]) }} AS AIRPORT_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AIRPORT_CODE", "DATA_SOURCE"]) }} AS AIRPORT_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY AIRPORT_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

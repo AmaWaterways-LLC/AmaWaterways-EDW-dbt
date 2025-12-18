@@ -77,7 +77,7 @@ WITH sw1_src AS (
             {{ transform_string('TRANS_TYPE_CLASS') }} AS TRANS_TYPE_CLASS,
             {{ transform_string('COMMISS_TYPE') }} AS COMMISS_TYPE,
             {{ transform_string('REFERENCE_CODE') }} AS REFERENCE_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'ACC_TRANS_TYPE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'ACC_TRANS_TYPE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -97,22 +97,30 @@ sw2_src AS (
             NULL AS TRANS_TYPE_CLASS,
             NULL AS COMMISS_TYPE,
             NULL AS REFERENCE_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'ACC_TRANS_TYPE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'ACC_TRANS_TYPE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TRANS_TYPE", "DATA_SOURCE"]) }} AS ACC_TRANS_TYPE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TRANS_TYPE", "DATA_SOURCE"]) }} AS ACC_TRANS_TYPE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TRANS_TYPE", "DATA_SOURCE"]) }} AS ACC_TRANS_TYPE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TRANS_TYPE", "DATA_SOURCE"]) }} AS ACC_TRANS_TYPE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY TRANS_TYPE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

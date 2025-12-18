@@ -74,7 +74,7 @@ WITH sw1_src AS (
             {{ transform_string('APPLY_TO_FIRST_GUEST') }} AS APPLY_TO_FIRST_GUEST,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'INVOICE_ITEM_GROUP') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'INVOICE_ITEM_GROUP') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -91,22 +91,30 @@ sw2_src AS (
             {{ transform_string('APPLY_TO_FIRST_GUEST') }} AS APPLY_TO_FIRST_GUEST,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'INVOICE_ITEM_GROUP') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'INVOICE_ITEM_GROUP') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["INV_ITEM_GROUP", "DATA_SOURCE"]) }} AS INVOICE_ITEM_GROUP_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["INV_ITEM_GROUP", "DATA_SOURCE"]) }} AS INVOICE_ITEM_GROUP_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["INV_ITEM_GROUP", "DATA_SOURCE"]) }} AS INVOICE_ITEM_GROUP_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["INV_ITEM_GROUP", "DATA_SOURCE"]) }} AS INVOICE_ITEM_GROUP_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY INV_ITEM_GROUP, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

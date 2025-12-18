@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['AGENCY_CLASSIFICATION_CODE', 'DATA_SOURCE'],
+        unique_key=['AGENCY_CLASSIFICATION_CODE', 'AGENCY_CLASS_TYPE', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -74,7 +74,7 @@ WITH sw1_src AS (
             NULL AS AGENCY_CLASS_TYPE,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'AGENCY_CLASSIFICATION') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'AGENCY_CLASSIFICATION') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -91,22 +91,30 @@ sw2_src AS (
             {{ transform_string('AGENCY_CLASS_TYPE') }} AS AGENCY_CLASS_TYPE,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'AGENCY_CLASSIFICATION') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'AGENCY_CLASSIFICATION') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AGENCY_CLASSIFICATION_CODE", "DATA_SOURCE"]) }} AS AGENCY_CLASSIFICATION_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AGENCY_CLASSIFICATION_CODE", "AGENCY_CLASS_TYPE", "DATA_SOURCE"]) }} AS AGENCY_CLASSIFICATION_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AGENCY_CLASSIFICATION_CODE", "DATA_SOURCE"]) }} AS AGENCY_CLASSIFICATION_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AGENCY_CLASSIFICATION_CODE", "AGENCY_CLASS_TYPE", "DATA_SOURCE"]) }} AS AGENCY_CLASSIFICATION_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY AGENCY_CLASSIFICATION_CODE, AGENCY_CLASS_TYPE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

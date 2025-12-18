@@ -71,7 +71,7 @@ WITH sw1_src AS (
             {{ transform_numeric('PACKAGE_ID') }} AS PACKAGE_ID,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'PACKAGE_ITIN_PACKAGE_LINK') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'PACKAGE_ITIN_PACKAGE_LINK') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -85,22 +85,30 @@ sw2_src AS (
             {{ transform_numeric('PACKAGE_ID') }} AS PACKAGE_ID,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'PACKAGE_ITIN_PACKAGE_LINK') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'PACKAGE_ITIN_PACKAGE_LINK') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ITIN_RECORD_ID", "PACKAGE_ID", "DATA_SOURCE"]) }} AS PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ITIN_RECORD_ID", "PACKAGE_ID", "DATA_SOURCE"]) }} AS PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ITIN_RECORD_ID", "PACKAGE_ID", "DATA_SOURCE"]) }} AS PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ITIN_RECORD_ID", "PACKAGE_ID", "DATA_SOURCE"]) }} AS PACKAGE_ITIN_PACKAGE_LINK_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY ITIN_RECORD_ID, PACKAGE_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

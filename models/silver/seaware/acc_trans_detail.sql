@@ -103,8 +103,6 @@ WITH sw1_src AS (
             NULL AS AMOUNT_FULL_PRICE,
             NULL AS CURRENCY_TRANS,
             NULL AS CURRENCY_PRICE,
-            NULL AS RATE_TRANSPRICE,
-            NULL AS RATE_PRICEBASE,
             NULL AS INVOICED_SEPARATELY,
             NULL AS BASE_ENTITY_TYPE,
             NULL AS BASE_ENTITY_ID,
@@ -140,6 +138,8 @@ WITH sw1_src AS (
             NULL AS TRANS_GUID,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
+            NULL AS RATE_PRICEBASE,
+            NULL AS RATE_TRANSPRICE,
             {{ transform_string('CURRENCY_CODE') }} AS CURRENCY_CODE,
             {{ transform_numeric('TRANS_AMOUNT') }} AS TRANS_AMOUNT,
             {{ transform_numeric('TRANS_AMOUNT_LEFT') }} AS TRANS_AMOUNT_LEFT,
@@ -150,7 +150,7 @@ WITH sw1_src AS (
             {{ transform_numeric('EXCHANGE_RATE') }} AS EXCHANGE_RATE,
             {{ transform_numeric('REF_TRANS_ID') }} AS REF_TRANS_ID,
             {{ transform_string('INTERN_BALANCED_COM') }} AS INTERN_BALANCED_COM
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'ACC_TRANS_DETAIL') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'ACC_TRANS_DETAIL') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -196,8 +196,6 @@ sw2_src AS (
             {{ transform_numeric('AMOUNT_FULL_PRICE') }} AS AMOUNT_FULL_PRICE,
             {{ transform_string('CURRENCY_TRANS') }} AS CURRENCY_TRANS,
             {{ transform_string('CURRENCY_PRICE') }} AS CURRENCY_PRICE,
-            {{ transform_numeric('RATE_TRANSPRICE') }} AS RATE_TRANSPRICE,
-            {{ transform_numeric('RATE_PRICEBASE') }} AS RATE_PRICEBASE,
             {{ transform_string('INVOICED_SEPARATELY') }} AS INVOICED_SEPARATELY,
             {{ transform_string('BASE_ENTITY_TYPE') }} AS BASE_ENTITY_TYPE,
             {{ transform_numeric('BASE_ENTITY_ID') }} AS BASE_ENTITY_ID,
@@ -233,6 +231,8 @@ sw2_src AS (
             {{ transform_string('TRANS_GUID') }} AS TRANS_GUID,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
+            {{ transform_numeric('RATE_PRICEBASE') }} AS RATE_PRICEBASE,
+            {{ transform_numeric('RATE_TRANSPRICE') }} AS RATE_TRANSPRICE,
             NULL AS CURRENCY_CODE,
             NULL AS TRANS_AMOUNT,
             NULL AS TRANS_AMOUNT_LEFT,
@@ -243,22 +243,30 @@ sw2_src AS (
             NULL AS EXCHANGE_RATE,
             NULL AS REF_TRANS_ID,
             NULL AS INTERN_BALANCED_COM
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'ACC_TRANS_DETAIL') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'ACC_TRANS_DETAIL') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TRANS_ID", "DATA_SOURCE"]) }} AS ACC_TRANS_DETAIL_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TRANS_ID", "DATA_SOURCE"]) }} AS ACC_TRANS_DETAIL_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TRANS_ID", "DATA_SOURCE"]) }} AS ACC_TRANS_DETAIL_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TRANS_ID", "DATA_SOURCE"]) }} AS ACC_TRANS_DETAIL_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY TRANS_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

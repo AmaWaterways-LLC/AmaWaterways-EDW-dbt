@@ -101,15 +101,23 @@ WITH src AS (
             {{ transform_string('ADVANCED_DELIVERY_FEEDBACK') }} AS ADVANCED_DELIVERY_FEEDBACK,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'GTB_REQUEST') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'GTB_REQUEST') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full_sw1 %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["REQUEST_ID", "DATA_SOURCE"]) }} AS GTB_REQUEST_SURROGATE_KEY,
-    src.*
-FROM src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["REQUEST_ID", "DATA_SOURCE"]) }} AS GTB_REQUEST_SURROGATE_KEY,
+        src.*
+    FROM src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY REQUEST_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

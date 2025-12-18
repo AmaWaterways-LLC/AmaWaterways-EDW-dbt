@@ -1,10 +1,64 @@
 {# ================================================================
-   FULL REFRESH CONFIGURATION
+   Generate Batch ID (must be top-of-file, before config)
+   ================================================================ #}
+{% set batch_id = invocation_id ~ '-' ~ this.name ~ '-' ~ modules.datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ') %}
+
+{# ================================================================
+   CONFIG BLOCK
+   ================================================================ #}
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy = 'merge',
+        unique_key=['_FIVETRAN_ID', 'DATA_SOURCE'],
+        pre_hook=[
+            "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
+             {% set table_exists = target_relation is not none %}
+             {% if table_exists %}
+                 {% set cfg = get_config_row('SW1', this.database, this.schema, 'RES_HIST_VALUE') %}
+                 {% set load_type_val = 'FULL' if cfg['LAST_UPDATED_WATERMARK_VALUE'] is none else 'INCREMENTAL' %}            
+             {% endif %}"
+        ],
+        post_hook=[
+            "{% if execute %}
+                 {% set wm_col_sw1 = get_watermark_column('SW1', this.database, this.schema, 'RES_HIST_VALUE') %}
+                 {% set max_wm_sw1 = compute_max_watermark_seaware(this, wm_col_sw1, 'SW1') %}
+                 {% if max_wm_sw1 is not none %}
+                     {% do update_config_watermark('SW1', this.database, this.schema, 'RES_HIST_VALUE', max_wm_sw1) %}
+                 {% endif %}
+
+                 {% set wm_col_sw2 = get_watermark_column('SW2', this.database, this.schema, 'RES_HIST_VALUE') %}
+                 {% set max_wm_sw2 = compute_max_watermark_seaware(this, wm_col_sw2, 'SW2') %}
+                 {% if max_wm_sw2 is not none %}
+                     {% do update_config_watermark('SW2', this.database, this.schema, 'RES_HIST_VALUE', max_wm_sw2) %}
+                {% endif %}
+             {% endif %}"
+        ]
+    )
+}}
+
+
+{# ================================================================
+   FETCH CONFIG & WATERMARK INFO
    ================================================================ #}
 
-{{ config(
-    materialized = 'table'
-) }}
+{% if execute %}
+    {% set cfg_sw1 = get_config_row('SW1', this.database, this.schema, 'RES_HIST_VALUE') %}
+    {% set wm_col_sw1 = cfg_sw1['WATERMARK_COLUMN'] %}
+    {% set last_wm_sw1 = cfg_sw1['LAST_UPDATED_WATERMARK_VALUE'] %}
+    {% set is_full_sw1 = (last_wm_sw1 is none) %}
+    {% set cfg_sw2 = get_config_row('SW2', this.database, this.schema, 'RES_HIST_VALUE') %}
+    {% set wm_col_sw2 = cfg_sw2['WATERMARK_COLUMN'] %}
+    {% set last_wm_sw2 = cfg_sw2['LAST_UPDATED_WATERMARK_VALUE'] %}
+    {% set is_full_sw2 = (last_wm_sw2 is none) %}
+{% else %}
+    {% set wm_col_sw1 = none %}
+    {% set last_wm_sw1 = none %}
+    {% set is_full_sw1 = true %}
+    {% set wm_col_sw2 = none %}
+    {% set last_wm_sw2 = none %}
+    {% set is_full_sw2 = true %}
+{% endif %}
 
 {# ================================================================
    SOURCE CTE
@@ -12,61 +66,33 @@
 
 WITH src AS (
     SELECT
-        'SW1' AS DATA_SOURCE,
-        {{ transform_numeric('TREE_NODE_ID') }} AS TREE_NODE_ID,
-        {{ transform_numeric('TRANS_ID') }} AS TRANS_ID,
-        {{ transform_string('ACTION') }} AS ACTION,
-        {{ transform_string('IT_IS_PARM') }} AS IT_IS_PARM,
-        {{ transform_string('FIELD_ID') }} AS FIELD_ID,
-        {{ transform_string('FIELD_VALUE_OLD') }} AS FIELD_VALUE_OLD,
-        {{ transform_string('FIELD_VALUE_NEW') }} AS FIELD_VALUE_NEW,
-        _FIVETRAN_DELETED AS SOURCE_DELETED,
-        {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'RES_HIST_VALUE') }}
+            'SW1' AS DATA_SOURCE,
+            {{ transform_numeric('TREE_NODE_ID') }} AS TREE_NODE_ID,
+            {{ transform_numeric('TRANS_ID') }} AS TRANS_ID,
+            {{ transform_string('ACTION') }} AS ACTION,
+            {{ transform_string('IT_IS_PARM') }} AS IT_IS_PARM,
+            {{ transform_string('FIELD_ID') }} AS FIELD_ID,
+            {{ transform_string('FIELD_VALUE_OLD') }} AS FIELD_VALUE_OLD,
+            {{ transform_string('FIELD_VALUE_NEW') }} AS FIELD_VALUE_NEW,
+            _FIVETRAN_DELETED AS SOURCE_DELETED,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'RES_HIST_VALUE') }}
+    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
+    {% if is_incremental() and not is_full_sw1 %}
+    WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
+    {% endif %}
 )
 
-{# ================================================================
-   DEDUPLICATION LOGIC
-   We dedupe using all columns, EXCEPT Fivetran audit columns
-   ================================================================ #}
-
-, dedupe AS (
-    SELECT *
-    FROM (
-        SELECT
-            *,
-            ROW_NUMBER() OVER (
-                PARTITION BY
-                    TREE_NODE_ID,
-                    TRANS_ID,
-                    ACTION,
-                    IT_IS_PARM,
-                    FIELD_ID,
-                    FIELD_VALUE_OLD,
-                    FIELD_VALUE_NEW,
-                    DATA_SOURCE
-                ORDER BY LAST_UPDATED_TIMESTAMP DESC
-            ) AS rn
-        FROM src
-    )
-    WHERE rn = 1
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["_FIVETRAN_ID", "DATA_SOURCE"]) }} AS RES_HIST_VALUE_SURROGATE_KEY,
+        src.*
+    FROM src
 )
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY _FIVETRAN_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 
-{# ================================================================
-   FINAL OUTPUT
-   Generate a surrogate key for table compatibility
-   ================================================================ #}
-
-SELECT
-    {{ dbt_utils.generate_surrogate_key([
-        "TREE_NODE_ID",
-        "TRANS_ID",
-        "ACTION",
-        "IT_IS_PARM",
-        "FIELD_ID",
-        "FIELD_VALUE_OLD",
-        "FIELD_VALUE_NEW",
-        "DATA_SOURCE"
-    ]) }} AS RES_HIST_VALUE_SURROGATE_KEY,
-    *
-FROM dedupe

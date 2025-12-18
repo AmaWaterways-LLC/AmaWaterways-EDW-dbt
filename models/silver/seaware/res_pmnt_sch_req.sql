@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['DUE_TYPE', 'RES_ID', 'DATA_SOURCE'],
+        unique_key=['RES_ID', 'DUE_TYPE', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -75,7 +75,7 @@ WITH sw1_src AS (
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_datetime('DUE_DATE') }} AS DUE_DATE,
             {{ transform_datetime('EXPIRATION_DATE') }} AS EXPIRATION_DATE
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'RES_PMNT_SCH_REQ') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'RES_PMNT_SCH_REQ') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -93,22 +93,30 @@ sw2_src AS (
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_datetime('DUE_DATE') }} AS DUE_DATE,
             {{ transform_datetime('EXPIRATION_DATE') }} AS EXPIRATION_DATE
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'RES_PMNT_SCH_REQ') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'RES_PMNT_SCH_REQ') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RES_ID", "DUE_TYPE", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["DUE_TYPE", "RES_ID", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RES_ID", "DUE_TYPE", "DATA_SOURCE"]) }} AS RES_PMNT_SCH_REQ_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY RES_ID, DUE_TYPE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

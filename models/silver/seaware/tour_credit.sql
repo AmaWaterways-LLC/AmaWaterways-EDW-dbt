@@ -94,7 +94,7 @@ WITH sw1_src AS (
             {{ transform_numeric('COLLECTION_ID') }} AS COLLECTION_ID,
             {{ transform_numeric('TC_POLICY_OVRD') }} AS TC_POLICY_OVRD,
             {{ transform_string('SHIP_CODE') }} AS SHIP_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'TOUR_CREDIT') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'TOUR_CREDIT') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -131,22 +131,30 @@ sw2_src AS (
             NULL AS COLLECTION_ID,
             NULL AS TC_POLICY_OVRD,
             NULL AS SHIP_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'TOUR_CREDIT') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'TOUR_CREDIT') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TOUR_CREDIT_ID", "DATA_SOURCE"]) }} AS TOUR_CREDIT_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TOUR_CREDIT_ID", "DATA_SOURCE"]) }} AS TOUR_CREDIT_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["TOUR_CREDIT_ID", "DATA_SOURCE"]) }} AS TOUR_CREDIT_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["TOUR_CREDIT_ID", "DATA_SOURCE"]) }} AS TOUR_CREDIT_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY TOUR_CREDIT_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

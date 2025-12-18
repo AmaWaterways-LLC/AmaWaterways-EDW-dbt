@@ -81,15 +81,23 @@ WITH src AS (
             {{ transform_string('ITEM_VALID') }} AS ITEM_VALID,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'AM_INVOICE_ITEM') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'AM_INVOICE_ITEM') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full_sw1 %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AM_INVOICE_ITEM_ID", "DATA_SOURCE"]) }} AS AM_INVOICE_ITEM_SURROGATE_KEY,
-    src.*
-FROM src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AM_INVOICE_ITEM_ID", "DATA_SOURCE"]) }} AS AM_INVOICE_ITEM_SURROGATE_KEY,
+        src.*
+    FROM src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY AM_INVOICE_ITEM_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

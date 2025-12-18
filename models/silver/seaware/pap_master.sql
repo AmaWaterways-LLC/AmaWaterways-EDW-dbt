@@ -64,7 +64,7 @@
    SOURCE CTE
    ================================================================ #}
 
-WITH src AS (
+WITH sw1_src AS (
     SELECT
             'SW1' AS DATA_SOURCE,
             {{ transform_string('PAP_CODE') }} AS PAP_CODE,
@@ -80,17 +80,63 @@ WITH src AS (
             {{ transform_string('PROMO_GROUP') }} AS PROMO_GROUP,
             {{ transform_string('COUPON_CLASS') }} AS COUPON_CLASS,
             {{ transform_string('PRINT_CRUISE_FARE_AMOUNT') }} AS PRINT_CRUISE_FARE_AMOUNT,
-            _FIVETRAN_DELETED AS SOURCE_DELETED,
-            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'PAP_MASTER') }}
+            NULL AS MANUAL_INPUT_VALUE_TYPE,
+            NULL AS IS_ACTIVE,
+            NULL AS BEST_FARE_ELIGIBLE,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
+            _FIVETRAN_DELETED AS SOURCE_DELETED
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'PAP_MASTER') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
-    {% if is_incremental() and not is_full_sw1 %}
+    {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
+    {% endif %}
+),
+
+sw2_src AS (
+    SELECT
+            'SW2' AS DATA_SOURCE,
+            {{ transform_string('PAP_CODE') }} AS PAP_CODE,
+            {{ transform_numeric('PAP_ID') }} AS PAP_ID,
+            {{ transform_numeric('PRIORITY') }} AS PRIORITY,
+            {{ transform_string('PROGRAM_CURRENCY') }} AS PROGRAM_CURRENCY,
+            {{ transform_string('AGENCY_DOMESTIC') }} AS AGENCY_DOMESTIC,
+            {{ transform_string('PAP_TYPE') }} AS PAP_TYPE,
+            {{ transform_string('COMMENTS') }} AS COMMENTS,
+            {{ transform_string('PAP_NAME') }} AS PAP_NAME,
+            {{ transform_string('EXTERNAL_RULES') }} AS EXTERNAL_RULES,
+            {{ transform_string('IS_PRICE_PROGRAM') }} AS IS_PRICE_PROGRAM,
+            {{ transform_string('PROMO_GROUP') }} AS PROMO_GROUP,
+            {{ transform_string('COUPON_CLASS') }} AS COUPON_CLASS,
+            {{ transform_string('PRINT_CRUISE_FARE_AMOUNT') }} AS PRINT_CRUISE_FARE_AMOUNT,
+            {{ transform_string('MANUAL_INPUT_VALUE_TYPE') }} AS MANUAL_INPUT_VALUE_TYPE,
+            {{ transform_string('IS_ACTIVE') }} AS IS_ACTIVE,
+            {{ transform_string('BEST_FARE_ELIGIBLE') }} AS BEST_FARE_ELIGIBLE,
+            {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
+            _FIVETRAN_DELETED AS SOURCE_DELETED
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'PAP_MASTER') }}
+    -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
+    {% if is_incremental() and not is_full %}
+    WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["PAP_CODE", "DATA_SOURCE"]) }} AS PAP_MASTER_SURROGATE_KEY,
-    src.*
-FROM src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["PAP_CODE", "DATA_SOURCE"]) }} AS PAP_MASTER_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
+
+    UNION ALL
+
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["PAP_CODE", "DATA_SOURCE"]) }} AS PAP_MASTER_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY PAP_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

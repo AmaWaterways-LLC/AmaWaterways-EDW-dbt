@@ -10,7 +10,7 @@
     config(
         materialized='incremental',
         incremental_strategy = 'merge',
-        unique_key=['PACKAGE_CLASS_CODE', 'PACKAGE_CLASS_TYPE', 'DATA_SOURCE'],
+        unique_key=['PACKAGE_CLASS_TYPE', 'PACKAGE_CLASS_CODE', 'DATA_SOURCE'],
         pre_hook=[
             "{% set target_relation = adapter.get_relation(database=this.database, schema=this.schema, identifier=this.name) %}
              {% set table_exists = target_relation is not none %}
@@ -73,7 +73,7 @@ WITH sw1_src AS (
             {{ transform_string('COMMENTS') }} AS COMMENTS,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'PACKAGE_CLASS_CODE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'PACKAGE_CLASS_CODE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -89,22 +89,30 @@ sw2_src AS (
             {{ transform_string('COMMENTS') }} AS COMMENTS,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'PACKAGE_CLASS_CODE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'PACKAGE_CLASS_CODE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["PACKAGE_CLASS_CODE", "PACKAGE_CLASS_TYPE", "DATA_SOURCE"]) }} AS PACKAGE_CLASS_CODE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["PACKAGE_CLASS_TYPE", "PACKAGE_CLASS_CODE", "DATA_SOURCE"]) }} AS PACKAGE_CLASS_CODE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["PACKAGE_CLASS_CODE", "PACKAGE_CLASS_TYPE", "DATA_SOURCE"]) }} AS PACKAGE_CLASS_CODE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["PACKAGE_CLASS_TYPE", "PACKAGE_CLASS_CODE", "DATA_SOURCE"]) }} AS PACKAGE_CLASS_CODE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY PACKAGE_CLASS_TYPE, PACKAGE_CLASS_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

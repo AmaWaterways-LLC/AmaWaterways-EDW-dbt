@@ -80,7 +80,7 @@ WITH sw1_src AS (
             NULL AS USE_FOR_SHOPPING,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'CABIN_ATTRIBUTE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'CABIN_ATTRIBUTE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -103,22 +103,30 @@ sw2_src AS (
             {{ transform_string('USE_FOR_SHOPPING') }} AS USE_FOR_SHOPPING,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'CABIN_ATTRIBUTE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'CABIN_ATTRIBUTE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["CABIN_ATTR_ID", "DATA_SOURCE"]) }} AS CABIN_ATTRIBUTE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY CABIN_ATTR_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

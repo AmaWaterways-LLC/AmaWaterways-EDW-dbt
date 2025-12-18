@@ -71,14 +71,14 @@ WITH sw1_src AS (
             {{ transform_numeric('GROUP_ID') }} AS GROUP_ID,
             {{ transform_numeric('GROUP_SHIP_REQ_ID') }} AS GROUP_SHIP_REQ_ID,
             {{ transform_string('PROMO_CODE') }} AS PROMO_CODE,
-            TRIM(TO_VARCHAR(GUEST_MASK)) AS GUEST_MASK,
+            {{ transform_numeric('GUEST_MASK') }} AS GUEST_MASK,
             {{ transform_numeric('REQUESTED_COUNT') }} AS REQUESTED_COUNT,
             {{ transform_numeric('UNASSIGNED_QTY') }} AS UNASSIGNED_QTY,
             NULL AS GRP_REQUESTS,
             NULL AS IS_FORCED,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'GROUP_PROMOTION') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'GROUP_PROMOTION') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -92,29 +92,37 @@ sw2_src AS (
             {{ transform_numeric('GROUP_ID') }} AS GROUP_ID,
             {{ transform_numeric('GROUP_SHIP_REQ_ID') }} AS GROUP_SHIP_REQ_ID,
             {{ transform_string('PROMO_CODE') }} AS PROMO_CODE,
-            TRIM(TO_VARCHAR(GUEST_MASK)) AS GUEST_MASK,
+            {{ transform_string('GUEST_MASK') }} AS GUEST_MASK,
             {{ transform_numeric('REQUESTED_COUNT') }} AS REQUESTED_COUNT,
             {{ transform_numeric('UNASSIGNED_QTY') }} AS UNASSIGNED_QTY,
             {{ transform_string('GRP_REQUESTS') }} AS GRP_REQUESTS,
             {{ transform_string('IS_FORCED') }} AS IS_FORCED,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'GROUP_PROMOTION') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'GROUP_PROMOTION') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["GROUP_PROMOTION_ID", "DATA_SOURCE"]) }} AS GROUP_PROMOTION_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["GROUP_PROMOTION_ID", "DATA_SOURCE"]) }} AS GROUP_PROMOTION_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["GROUP_PROMOTION_ID", "DATA_SOURCE"]) }} AS GROUP_PROMOTION_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["GROUP_PROMOTION_ID", "DATA_SOURCE"]) }} AS GROUP_PROMOTION_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY GROUP_PROMOTION_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

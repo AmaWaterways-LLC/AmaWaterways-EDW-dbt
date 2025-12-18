@@ -80,7 +80,7 @@ WITH sw1_src AS (
             NULL AS IS_EXTERNAL,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'VCS_ROW_TYPE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'VCS_ROW_TYPE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -103,22 +103,30 @@ sw2_src AS (
             {{ transform_string('IS_EXTERNAL') }} AS IS_EXTERNAL,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'VCS_ROW_TYPE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'VCS_ROW_TYPE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ROW_TYPE_CODE", "DATA_SOURCE"]) }} AS VCS_ROW_TYPE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ROW_TYPE_CODE", "DATA_SOURCE"]) }} AS VCS_ROW_TYPE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ROW_TYPE_CODE", "DATA_SOURCE"]) }} AS VCS_ROW_TYPE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ROW_TYPE_CODE", "DATA_SOURCE"]) }} AS VCS_ROW_TYPE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY ROW_TYPE_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

@@ -93,7 +93,7 @@ WITH sw1_src AS (
             {{ transform_string('ADDON_COMPONENT_TYPE') }} AS ADDON_COMPONENT_TYPE,
             {{ transform_numeric('AGE_FROM') }} AS AGE_FROM,
             {{ transform_numeric('AGE_TO') }} AS AGE_TO
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'AM_CODE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'AM_CODE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -129,22 +129,30 @@ sw2_src AS (
             NULL AS ADDON_COMPONENT_TYPE,
             NULL AS AGE_FROM,
             NULL AS AGE_TO
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'AM_CODE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'AM_CODE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AMENITY_CODE", "DATA_SOURCE"]) }} AS AM_CODE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AMENITY_CODE", "DATA_SOURCE"]) }} AS AM_CODE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["AMENITY_CODE", "DATA_SOURCE"]) }} AS AM_CODE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["AMENITY_CODE", "DATA_SOURCE"]) }} AS AM_CODE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY AMENITY_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

@@ -76,7 +76,7 @@ WITH sw1_src AS (
             {{ transform_string('STR_VALUE') }} AS STR_VALUE,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'VCS_ADDITIONAL_FIELD_VALUE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'VCS_ADDITIONAL_FIELD_VALUE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -95,22 +95,30 @@ sw2_src AS (
             {{ transform_string('STR_VALUE') }} AS STR_VALUE,
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'VCS_ADDITIONAL_FIELD_VALUE') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'VCS_ADDITIONAL_FIELD_VALUE') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ID", "DATA_SOURCE"]) }} AS VCS_ADDITIONAL_FIELD_VALUE_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ID", "DATA_SOURCE"]) }} AS VCS_ADDITIONAL_FIELD_VALUE_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["ID", "DATA_SOURCE"]) }} AS VCS_ADDITIONAL_FIELD_VALUE_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["ID", "DATA_SOURCE"]) }} AS VCS_ADDITIONAL_FIELD_VALUE_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

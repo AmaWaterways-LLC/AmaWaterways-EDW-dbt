@@ -99,7 +99,7 @@ WITH sw1_src AS (
             {{ transform_numeric('RES_PACKAGE_ID') }} AS RES_PACKAGE_ID,
             {{ transform_numeric('AM_ORDER_ID') }} AS AM_ORDER_ID,
             {{ transform_string('AMENITY_CODE') }} AS AMENITY_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'RES_ADDON') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'RES_ADDON') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -141,22 +141,30 @@ sw2_src AS (
             NULL AS RES_PACKAGE_ID,
             NULL AS AM_ORDER_ID,
             NULL AS AMENITY_CODE
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'RES_ADDON') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'RES_ADDON') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["RES_ADDON_ID", "DATA_SOURCE"]) }} AS RES_ADDON_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RES_ADDON_ID", "DATA_SOURCE"]) }} AS RES_ADDON_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["RES_ADDON_ID", "DATA_SOURCE"]) }} AS RES_ADDON_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["RES_ADDON_ID", "DATA_SOURCE"]) }} AS RES_ADDON_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY RES_ADDON_ID, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 

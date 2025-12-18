@@ -87,7 +87,7 @@ WITH sw1_src AS (
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             {{ transform_string('SHIP_BRAND') }} AS SHIP_BRAND
-    FROM {{ source('AMA_PROD_BRNZ_SW1', 'SHIP') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW1', 'SHIP') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw1 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw1) }}
@@ -117,22 +117,30 @@ sw2_src AS (
             {{ transform_datetime('_FIVETRAN_SYNCED') }} AS LAST_UPDATED_TIMESTAMP,
             _FIVETRAN_DELETED AS SOURCE_DELETED,
             NULL AS SHIP_BRAND
-    FROM {{ source('AMA_PROD_BRNZ_SW2', 'SHIP') }}
+    FROM {{ source(var('bronze_source_prefix') ~ '_SW2', 'SHIP') }}
     -- Incremental load: include only rows whose watermark is greater than the last recorded watermark value
     {% if is_incremental() and not is_full %}
     WHERE COALESCE({{ wm_col_sw2 }}, {{ wm_default_literal() }}) > {{ _format_watermark(last_wm_sw2) }}
     {% endif %}
 )
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_SURROGATE_KEY,
-    sw1_src.*
-FROM sw1_src
+SELECT *
+FROM (
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_SURROGATE_KEY,
+        sw1_src.*
+    FROM sw1_src
 
-UNION ALL
+    UNION ALL
 
-SELECT
-    {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_SURROGATE_KEY,
-    sw2_src.*
-FROM sw2_src
+    SELECT
+        {{ dbt_utils.generate_surrogate_key(["SHIP_CODE", "DATA_SOURCE"]) }} AS SHIP_SURROGATE_KEY,
+        sw2_src.*
+    FROM sw2_src
+)
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY SHIP_CODE, DATA_SOURCE
+        ORDER BY LAST_UPDATED_TIMESTAMP DESC
+) = 1
 
