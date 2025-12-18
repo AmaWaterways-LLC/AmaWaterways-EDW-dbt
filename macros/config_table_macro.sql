@@ -1,10 +1,21 @@
 {# =========================
    Config & Watermark Utils
    ========================= #}
-
+{#
 {% set LOG_DB = "AMA_RAW" %}
 {% set LOG_SCHEMA = "ORACLE_V2_LOG_TABLES_TESTING_SEAWARE" %}
 {% set CONFIG_TABLE = "TEST_CONFIG_TABLE" %}
+#}
+
+{% macro get_config_relation() %}
+  {{ return(
+      api.Relation.create(
+        database   = var('config_database'),
+        schema     = var('config_schema'),
+        identifier = var('config_table')
+      )
+  ) }}
+{% endmacro %}
 
 {# --- Helper: emit safe SQL string literals (single-quoted, escaped) 
 {% macro _audit_lit(val) -%}
@@ -73,7 +84,8 @@
       load_type,
       watermark_column,
       last_updated_watermark_value
-    from AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_CONFIG_TABLE
+    {% set cfg_rel = get_config_relation() %}
+    from {{ cfg_rel }}
     where upper(trim(data_source))   = upper(trim({{ _audit_lit(data_source) }}))
       and upper(trim(database_name)) = upper(trim({{ _audit_lit(database_name) }}))
       and upper(trim(schema_name))   = upper(trim({{ _audit_lit(schema_name) }}))
@@ -120,7 +132,8 @@
 {# Update the config watermark to a provided value #}
 {% macro update_config_watermark(data_source, database_name, schema_name, table_name, new_watermark_value) %}
   {% set sql %}
-    update AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_CONFIG_TABLE
+    {% set cfg_rel = get_config_relation() %}
+    update {{ cfg_rel }}
        set last_updated_watermark_value = {{ _format_watermark(new_watermark_value) }}
      where upper(trim(data_source))   = upper(trim({{ _audit_lit(data_source) }}))
        and upper(trim(database_name)) = upper(trim({{ _audit_lit(database_name) }}))

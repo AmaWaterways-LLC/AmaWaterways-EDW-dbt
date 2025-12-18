@@ -1,12 +1,24 @@
 {# ====================
    Audit Logging Utils (Fully Self-contained FQN)
    ==================== #}
-
+{#
 {% set AUDIT_TABLE_FQN = api.Relation.create(
     database="AMA_RAW",
     schema="ORACLE_V2_LOG_TABLES_TESTING_SEAWARE",
     identifier="TEST_AUDIT_TABLE"
 ) %}
+#}
+
+{% macro get_audit_relation() %}
+  {{ return(
+      api.Relation.create(
+        database   = var('audit_database'),
+        schema     = var('audit_schema'),
+        identifier = var('audit_table')
+      )
+  ) }}
+{% endmacro %}
+
 
 {# --- Helper: emit safe SQL literals (handles strings, numbers, booleans) --- #}
 {% macro _audit_lit(val) -%}
@@ -40,12 +52,14 @@
         {% do log("  environment: " ~ environment, info=true) %}
         {% do log("  ingested_by: " ~ ingested_by, info=true) %}
         {% do log("  batch_id: " ~ batch_id, info=true) %}
-        {% do log("  Audit table: " ~ AUDIT_TABLE_FQN, info=true) %}
+        {#{% do log("  Audit table: " ~ AUDIT_TABLE_FQN, info=true) %}#}
+        {% do log("  Audit table: " ~ get_audit_relation(), info=true) %}
         {% do log("=" * 80, info=true) %}
     {% endif %}
 
     {% set sql %}
-        insert into AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_AUDIT_TABLE (
+        {% set audit_rel = get_audit_relation() %}
+        insert into {{ audit_rel }} (
             pipeline_name, 
             source_name, 
             database_name, 
@@ -122,7 +136,8 @@
     {% endif %}
     
     {% set sql %}
-        update AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_AUDIT_TABLE
+        {% set audit_rel = get_audit_relation() %}
+        update {{ audit_rel }}
            set {{ set_parts|join(', ') }}
          where batch_id = {{ _audit_lit(batch_id) }}
     {% endset %}
@@ -151,7 +166,8 @@
     {% endif %}
     
     {% set sql %}
-        update AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_AUDIT_TABLE
+        {% set audit_rel = get_audit_relation() %}
+        update {{ audit_rel }}
            set end_time = current_timestamp(),
                duration_seconds = datediff('second', start_time, current_timestamp()),
                status = {{ _audit_lit(status) }},
@@ -184,7 +200,8 @@
     {# Check if table exists #}
     {% set check_sql %}
         select count(*) as cnt
-        from {{ AUDIT_TABLE_FQN }}
+        {% set audit_rel = get_audit_relation() %}
+        from {{ audit_rel }}
         limit 1
     {% endset %}
     
@@ -196,9 +213,12 @@
             {# Show table structure #}
             {% set structure_sql %}
                 select column_name, data_type
-                from AMA_RAW.information_schema.columns
+                {#from AMA_RAW.information_schema.columns
                 where table_schema = 'ORACLE_V2_LOG_TABLES_TESTING_SEAWARE'
-                  and table_name = 'TEST_AUDIT_TABLE'
+                  and table_name = 'TEST_AUDIT_TABLE'#}
+                from {{ var('audit_database') }}.information_schema.columns
+                where table_schema = {{ _audit_lit(var('audit_schema')) }}
+                  and table_name   = {{ _audit_lit(var('audit_table')) }}
                 order by ordinal_position
             {% endset %}
             
@@ -221,7 +241,8 @@
                     status,
                     start_time,
                     end_time
-                from AMA_RAW.ORACLE_V2_LOG_TABLES_TESTING_SEAWARE.TEST_AUDIT_TABLE
+                {% set audit_rel = get_audit_relation() %}
+                from {{ audit_rel }}
                 order by start_time desc
                 limit 5
             {% endset %}

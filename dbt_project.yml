@@ -37,3 +37,19 @@ models:
       seaware:
         +schema: "SEAWARE"
 
+
+vars:
+  config_database: "{{ env_var('DBT_CONFIG_DATABASE') }}"
+  config_schema: "{{ env_var('DBT_CONFIG_SCHEMA') }}"
+  config_table: "{{ env_var('DBT_CONFIG_TABLE') }}"
+
+  audit_database: "{{ env_var('DBT_AUDIT_DATABASE') }}"
+  audit_schema: "{{ env_var('DBT_AUDIT_SCHEMA') }}"
+  audit_table: "{{ env_var('DBT_AUDIT_TABLE') }}"
+
+  dbt_logging_database: "{{ env_var('DBT_LOGGING_DATABASE', target.database) }}"
+  dbt_logging_schema: "{{ env_var('DBT_LOGGING_SCHEMA') }}"
+  dbt_logging_table: "{{ env_var('DBT_LOGGING_TABLE') }}"
+
+
+

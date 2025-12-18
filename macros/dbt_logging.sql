@@ -1,13 +1,32 @@
-{% macro dbt_logging(results, graph) -%}
+{% macro get_dbt_logging_relation() %}
+  {{ return(
+      api.Relation.create(
+        database   = var('dbt_logging_database', target.database),
+        schema     = var('dbt_logging_schema'),
+        identifier = var('dbt_logging_table')
+      )
+  ) }}
+{% endmacro %}
 
+{% macro dbt_logging(results, graph) -%}
+{#
 {% set audit_log_schema = "dbt_mkompelli" %}
 {% set audit_log_table = "dbt_audit_log" %}
+#}
 
 {# Reset previous active flags #}
+{#
 {% do run_query(
     "UPDATE " ~ target.database ~ "." ~ audit_log_schema ~ "." ~ audit_log_table ~
     " SET active_flag = 0 WHERE active_flag = 1"
 ) %}
+#}
+{% set log_rel = get_dbt_logging_relation() %}
+{% do run_query(
+    "UPDATE " ~ log_rel ~
+    " SET active_flag = 0 WHERE active_flag = 1"
+) %}
+
 
 {% for result in results if result.node.resource_type in ['model'] %}
 
@@ -82,7 +101,8 @@
 
         {# INSERT LOG #}
         {% set insert_sql %}
-            INSERT INTO {{ target.database }}.{{ audit_log_schema }}.{{ audit_log_table }} (
+            {#INSERT INTO {{ target.database }}.{{ audit_log_schema }}.{{ audit_log_table }} (#}
+            INSERT INTO {{ log_rel }} (
                 run_id,
                 run_time,
                 model_name,
