@@ -19,7 +19,7 @@ models:
       combination_of_columns:
       - TREE_NODE_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_HIST_TREE_SURROGATE_KEY

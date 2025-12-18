@@ -19,7 +19,7 @@ models:
       - PARAM_CODE
       - SECTION_NAME
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SEAWARE_SETTINGS_SURROGATE_KEY

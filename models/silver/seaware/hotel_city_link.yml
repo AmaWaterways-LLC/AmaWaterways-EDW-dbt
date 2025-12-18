@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - HOTEL_CITY_LINK_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: HOTEL_CITY_LINK_SURROGATE_KEY

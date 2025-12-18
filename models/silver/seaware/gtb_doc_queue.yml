@@ -16,7 +16,7 @@ models:
       combination_of_columns:
       - RECORD_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: GTB_DOC_QUEUE_SURROGATE_KEY

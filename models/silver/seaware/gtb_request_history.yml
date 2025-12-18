@@ -19,7 +19,7 @@ models:
       - REQUEST_ID
       - TIME_STAMP
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: GTB_REQUEST_HISTORY_SURROGATE_KEY

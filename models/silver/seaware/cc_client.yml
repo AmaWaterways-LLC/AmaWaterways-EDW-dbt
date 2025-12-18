@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - CC_ACC_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: CC_CLIENT_SURROGATE_KEY

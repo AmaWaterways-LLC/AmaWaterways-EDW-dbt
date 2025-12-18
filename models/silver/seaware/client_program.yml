@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - CLIENT_PROGRAM_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: CLIENT_PROGRAM_SURROGATE_KEY

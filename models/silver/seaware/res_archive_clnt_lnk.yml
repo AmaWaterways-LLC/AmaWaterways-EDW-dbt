@@ -18,7 +18,7 @@ models:
       - CLIENT_ID
       - RECORD_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_ARCHIVE_CLNT_LNK_SURROGATE_KEY

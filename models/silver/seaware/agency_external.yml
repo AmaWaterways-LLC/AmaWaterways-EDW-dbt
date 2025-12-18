@@ -16,7 +16,7 @@ models:
           combination_of_columns:
             - AGENCY_EXTERNAL_ID
             - DATA_SOURCE
-          where: "SOURCE_DELETED = false"
+          
 
     columns:
       - name: AGENCY_EXTERNAL_SURROGATE_KEY

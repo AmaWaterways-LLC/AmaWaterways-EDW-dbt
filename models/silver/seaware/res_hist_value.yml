@@ -24,7 +24,7 @@ models:
       - FIELD_VALUE_OLD
       - FIELD_VALUE_NEW
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_HIST_VALUE_SURROGATE_KEY

@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - AM_ORD_ITEM_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: AM_ORDER_ITEM_SURROGATE_KEY

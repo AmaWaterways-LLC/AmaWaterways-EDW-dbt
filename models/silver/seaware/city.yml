@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - CITY_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: CITY_SURROGATE_KEY

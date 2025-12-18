@@ -22,7 +22,7 @@ models:
       - SEQ_NUMBER
       - SHIP_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: CABIN_ATTRIBUTE_LINK_SURROGATE_KEY

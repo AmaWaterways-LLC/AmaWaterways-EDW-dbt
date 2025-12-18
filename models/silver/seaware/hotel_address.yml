@@ -19,7 +19,7 @@ models:
       - HOTEL_ID
       - SEQ_NUMBER
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: HOTEL_ADDRESS_SURROGATE_KEY

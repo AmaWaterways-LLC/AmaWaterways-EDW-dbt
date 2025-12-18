@@ -18,7 +18,7 @@ models:
       - SEQ_NUMBER
       - VENDOR_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: VENDOR_PHONE_SURROGATE_KEY

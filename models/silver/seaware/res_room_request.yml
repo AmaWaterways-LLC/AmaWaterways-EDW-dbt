@@ -17,7 +17,7 @@ models:
       - RES_ID
       - ROOM_SEQ_NUMBER
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_ROOM_REQUEST_SURROGATE_KEY

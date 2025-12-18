@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - AGENT_PHONE_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: AGENT_PHONE_SURROGATE_KEY

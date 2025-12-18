@@ -19,7 +19,7 @@ models:
       - ALLOCATION_ID
       - INV_RECORD_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: HOTEL_INV_ASSIGN_SURROGATE_KEY

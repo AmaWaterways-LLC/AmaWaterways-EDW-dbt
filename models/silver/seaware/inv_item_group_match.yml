@@ -24,7 +24,7 @@ models:
           combination_of_columns:
             - RECORD_ID
             - DATA_SOURCE
-          where: "SOURCE_DELETED = false"
+          
 
     columns:
       - name: INV_ITEM_GROUP_MATCH_SURROGATE_KEY

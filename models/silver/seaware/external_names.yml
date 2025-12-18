@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - EXTERNAL_NAMES_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: EXTERNAL_NAMES_SURROGATE_KEY

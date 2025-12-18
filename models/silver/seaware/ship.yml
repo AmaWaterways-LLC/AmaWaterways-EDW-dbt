@@ -16,7 +16,7 @@ models:
       combination_of_columns:
       - SHIP_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SHIP_SURROGATE_KEY

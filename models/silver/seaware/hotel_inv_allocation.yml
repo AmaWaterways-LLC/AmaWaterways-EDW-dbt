@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - ALLOCATION_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: HOTEL_INV_ALLOCATION_SURROGATE_KEY

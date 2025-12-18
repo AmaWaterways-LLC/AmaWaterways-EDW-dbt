@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - LOG_RECORD_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: VCS_LOG_RECORD_SURROGATE_KEY

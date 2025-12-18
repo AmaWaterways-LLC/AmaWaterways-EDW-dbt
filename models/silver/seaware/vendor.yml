@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - VENDOR_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: VENDOR_SURROGATE_KEY

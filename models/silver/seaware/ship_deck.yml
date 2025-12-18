@@ -19,7 +19,7 @@ models:
       - DECK_NUMBER
       - SHIP_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SHIP_DECK_SURROGATE_KEY

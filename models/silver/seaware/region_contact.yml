@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - AGENCY_RGN_CONTACT_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: REGION_CONTACT_SURROGATE_KEY

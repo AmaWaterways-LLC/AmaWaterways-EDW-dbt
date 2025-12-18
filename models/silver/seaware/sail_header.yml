@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - SAIL_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SAIL_HEADER_SURROGATE_KEY

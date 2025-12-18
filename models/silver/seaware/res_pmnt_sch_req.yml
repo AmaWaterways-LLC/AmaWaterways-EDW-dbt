@@ -19,7 +19,7 @@ models:
       - DUE_TYPE
       - RES_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_PMNT_SCH_REQ_SURROGATE_KEY

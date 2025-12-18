@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - COMPONENT_TYPE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: COMPONENT_TYPE_SURROGATE_KEY

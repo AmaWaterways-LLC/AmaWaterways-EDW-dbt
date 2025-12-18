@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - DOC_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SW_DOCUMENTS_SURROGATE_KEY

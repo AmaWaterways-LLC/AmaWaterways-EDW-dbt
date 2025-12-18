@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - ALT_ADDR_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: COLLAT_ALT_ADDR_SURROGATE_KEY

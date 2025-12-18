@@ -19,7 +19,7 @@ models:
       - RES_ID
       - TW_RES_HEADER_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: TW_RES_DETAIL_SURROGATE_KEY

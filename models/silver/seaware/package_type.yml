@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - PACKAGE_TYPE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: PACKAGE_TYPE_SURROGATE_KEY

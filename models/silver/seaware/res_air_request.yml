@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - AIR_REQUEST_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_AIR_REQUEST_SURROGATE_KEY

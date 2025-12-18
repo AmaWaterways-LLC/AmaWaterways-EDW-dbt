@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - GUEST_TYPE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: GUEST_TYPE_SURROGATE_KEY

@@ -16,7 +16,7 @@ models:
       combination_of_columns:
       - RTG_SEGMENT_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_AIR_REQUEST_SEGMENT_SURROGATE_KEY

@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - SP_REQ_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: SP_REQ_ORDER_SURROGATE_KEY

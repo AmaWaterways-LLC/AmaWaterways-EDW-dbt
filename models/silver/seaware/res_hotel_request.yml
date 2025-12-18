@@ -17,7 +17,7 @@ models:
       combination_of_columns:
       - HOTEL_REQUEST_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: RES_HOTEL_REQUEST_SURROGATE_KEY

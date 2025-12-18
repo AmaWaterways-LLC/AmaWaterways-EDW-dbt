@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - AMENITY_CODE
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: AM_CODE_SURROGATE_KEY

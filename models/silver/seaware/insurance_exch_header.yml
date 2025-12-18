@@ -18,7 +18,7 @@ models:
       combination_of_columns:
       - EXCH_HEADER_ID
       - DATA_SOURCE
-      where: "SOURCE_DELETED = false"
+      
 
   columns:
   - name: INSURANCE_EXCH_HEADER_SURROGATE_KEY
