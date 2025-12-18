@@ -52,4 +52,12 @@ vars:
   dbt_logging_table: "{{ env_var('DBT_LOGGING_TABLE') }}"
 
 
+  bronze_source_prefix: "{{ env_var('DBT_BRONZE_SOURCE_PREFIX', 'AMA_PROD_BRNZ') }}"
+
+
+
+
+
+
+
 
