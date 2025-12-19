@@ -41,4 +41,4 @@ SELECT
         'DATA_SOURCE'
     ]) }} AS RES_HIST_VALUE_SURROGATE_KEY,
     src.*
-FROM src;
+FROM src
