@@ -4,7 +4,7 @@ DBT MACROS FOR DATA QUALITY TRANSFORMATIONS
 ================================================================================
 Corresponding SQL implementations for transformation_functions.py
 #}
-
+{#test#}
 {# ============================================================================
    STRING TRANSFORM MACRO
    ============================================================================ #}
@@ -498,3 +498,4 @@ transformed AS (
 SELECT * FROM transformed
 
 #}
+
