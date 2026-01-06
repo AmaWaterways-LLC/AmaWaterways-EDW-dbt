@@ -499,6 +499,3 @@ SELECT * FROM transformed
 
 #}
 
-
-
-
