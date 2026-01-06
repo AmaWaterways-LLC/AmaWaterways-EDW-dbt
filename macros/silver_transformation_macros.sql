@@ -1,3 +1,4 @@
+{# Adding comment to test the CICD flow #}
 {# 
 ================================================================================
 DBT MACROS FOR DATA QUALITY TRANSFORMATIONS
@@ -498,3 +499,4 @@ transformed AS (
 SELECT * FROM transformed
 
 #}
+
