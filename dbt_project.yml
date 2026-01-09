@@ -7,6 +7,8 @@ profile: 'default'
 on-run-end:
   - "{{ audit_failure_handler(results) }}"
   - "{{ dbt_logging(results) }}"
+  - "{{ log_poc_job_run() }}"
+
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -36,6 +38,11 @@ models:
       # -------------------------------------------------------------
       seaware:
         +schema: "SEAWARE"
+
+
+on-run-start:
+  - "{{ create_poc_environment() }}"
+
 
 
 vars:
