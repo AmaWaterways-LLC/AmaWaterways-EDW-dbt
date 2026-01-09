@@ -4,7 +4,7 @@
         {% do log("POC: Logging dbt job completion", info=True) %}
 
         {% set sql %}
-            INSERT INTO POC_DB.POC_SCHEMA.POC_AUDIT
+            INSERT INTO PC_DBT_DB.POC_SCHEMA.POC_AUDIT
             VALUES (
                 '{{ invocation_id }}',
                 'DBT_JOB_COMPLETED',
