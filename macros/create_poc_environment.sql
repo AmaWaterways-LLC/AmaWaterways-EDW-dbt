@@ -1,14 +1,12 @@
 {% macro create_poc_environment() %}
     {% if env_var('DBT_RUN_UAT_SETUP', 'false') == 'true' %}
 
-        {% do log("POC: Creating database, schema, and table", info=True) %}
+        {% do log("POC: Creating schema and audit table in PC_DBT_DB", info=True) %}
 
         {% set sql %}
-            CREATE DATABASE IF NOT EXISTS POC_DB;
+            CREATE SCHEMA IF NOT EXISTS PC_DBT_DB.POC_SCHEMA;
 
-            CREATE SCHEMA IF NOT EXISTS POC_DB.POC_SCHEMA;
-
-            CREATE TABLE IF NOT EXISTS POC_DB.POC_SCHEMA.POC_AUDIT (
+            CREATE TABLE IF NOT EXISTS PC_DBT_DB.POC_SCHEMA.POC_AUDIT (
                 run_id STRING,
                 event STRING,
                 event_ts TIMESTAMP
